@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B37253902EA9221C003CE43C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B372538F2EA9221C003CE43C /* FirebaseAuth */; };
+		B37253922EA9221C003CE43C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = B37253912EA9221C003CE43C /* FirebaseCore */; };
+		B37253942EA9221C003CE43C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B37253932EA9221C003CE43C /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		F589DA1D2EA4A2730039C695 /* RoomEz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomEz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +42,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B37253922EA9221C003CE43C /* FirebaseCore in Frameworks */,
+				B37253902EA9221C003CE43C /* FirebaseAuth in Frameworks */,
+				B37253942EA9221C003CE43C /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +87,9 @@
 			);
 			name = RoomEz;
 			packageProductDependencies = (
+				B372538F2EA9221C003CE43C /* FirebaseAuth */,
+				B37253912EA9221C003CE43C /* FirebaseCore */,
+				B37253932EA9221C003CE43C /* FirebaseFirestore */,
 			);
 			productName = RoomEz;
 			productReference = F589DA1D2EA4A2730039C695 /* RoomEz.app */;
@@ -347,6 +359,24 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B372538F2EA9221C003CE43C /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B37253762EA876EA003CE43C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		B37253912EA9221C003CE43C /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B37253762EA876EA003CE43C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		B37253932EA9221C003CE43C /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B37253762EA876EA003CE43C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F589DA152EA4A2730039C695 /* Project object */;
 }
