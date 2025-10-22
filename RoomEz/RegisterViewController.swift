@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class RegisterViewController: UIViewController {
 
@@ -22,12 +23,36 @@ class RegisterViewController: UIViewController {
         registerButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
         registerButton.layer.cornerRadius = 10
         registerButton.clipsToBounds = true
+        
+        errorMessage.text = ""
 
         // Do any additional setup after loading the view.
     }
     
     @IBAction func registerButtonPressed(_ sender: Any) {
-    }
+        guard let email = emailText.text, !email.isEmpty,
+              let password = passwordText.text, !password.isEmpty,
+              let confirmPassword = confirmPasswordText.text, !confirmPassword.isEmpty else {
+            errorMessage.text = "Please fill in all fields."
+            return
+        }
+        guard password == confirmPassword else {
+            errorMessage.text = "Passwords do not match."
+            return
+        }
+        
+        // Step 2: Create the user in Firebase
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self]
+            authResult, error in
+            guard let self = self else { return }
+            if let error = error as NSError? {
+                self.errorMessage.text = error.localizedDescription
+            } else {
+                self.errorMessage.text = ""
+                // Navigate to next screen (or dismiss)
+                self.performSegue(withIdentifier: "goToHome", sender: self)
+        
+        
     
     /*
     // MARK: - Navigation
