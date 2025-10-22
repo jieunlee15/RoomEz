@@ -59,7 +59,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             t.isCompleted.toggle()
             self.tasks[tappedIndexPath.row] = t
             tableView.reloadRows(at: [tappedIndexPath], with: .automatic)
-            self.showBanner(message: t.isCompleted ? "✅ Task Completed!" : "⏳ Task Reopened")
+            self.showBanner(message: t.isCompleted ? "Task Completed!" : "Task Reopened")
         }
 
         return cell
@@ -67,6 +67,31 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
 
     // (Optional) If you previously had didSelectRowAt toggling, remove it or leave it empty since allowsSelection=false
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) { }
+    
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+
+        // DELETE
+        let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, done in
+            guard let self = self else { return }
+            self.tasks.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            self.showBanner(message: "Task deleted")
+            done(true)
+        }
+
+        // EDIT
+        let edit = UIContextualAction(style: .normal, title: "Edit") { [weak self] _, _, done in
+            guard let self = self else { return }
+            self.presentEditor(task: self.tasks[indexPath.row], index: indexPath.row)
+            done(true)
+        }
+        edit.backgroundColor = .systemBlue
+
+        return UISwipeActionsConfiguration(actions: [delete, edit])
+    }
+
 
     // MARK: - Banner (matches your Announcements style)
     func showBanner(message: String) {
@@ -111,6 +136,18 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             }, completion: { _ in banner.removeFromSuperview() })
         }
     }
+    
+    private func presentEditor(task: RoomTask?, index: Int? = nil) {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let vc = sb.instantiateViewController(withIdentifier: "NewTaskVC") as! NewTaskViewController
+        vc.modalPresentationStyle = .pageSheet
+        vc.delegate = self
+        vc.editingTask = task
+        vc.editingIndex = index
+        present(vc, animated: true)
+    }
+
+    
 }
 
 extension TaskListViewController: NewTaskDelegate {
@@ -120,8 +157,12 @@ extension TaskListViewController: NewTaskDelegate {
     }
     
     func didUpdateTask(_ task: RoomTask, at index: Int) {
+        guard tasks.indices.contains(index) else { return }
         tasks[index] = task
-        tableView.reloadData()
+        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+        showBanner(message: "Task updated")
     }
+    
+    
 }
 
