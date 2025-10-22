@@ -9,6 +9,7 @@ import UIKit
 
 class RegisterViewController: UIViewController {
 
+    @IBOutlet weak var errorMessage: UILabel!
     @IBOutlet weak var usernameText: UITextField!
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
@@ -25,7 +26,9 @@ class RegisterViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
-
+    @IBAction func registerButtonPressed(_ sender: Any) {
+    }
+    
     /*
     // MARK: - Navigation
 

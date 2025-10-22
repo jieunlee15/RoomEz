@@ -9,6 +9,7 @@ import UIKit
 
 class LoginViewController: UIViewController {
 
+    @IBOutlet weak var errorMessage: UILabel!
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
     @IBOutlet weak var loginButton: UIButton!
@@ -23,7 +24,9 @@ class LoginViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
-
+    @IBAction func loginButtonPressed(_ sender: Any) {
+    }
+    
     /*
     // MARK: - Navigation
 

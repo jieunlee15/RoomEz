@@ -31,7 +31,11 @@ class WelcomeViewController: UIViewController {
             registerButton.clipsToBounds = true
         }
     
-
+    @IBAction func loginButtonPressed(_ sender: Any) {
+    }
+    
+    @IBAction func registerButtonPressed(_ sender: Any) {
+    }
     /*
     // MARK: - Navigation
 
