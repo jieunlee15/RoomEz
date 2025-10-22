@@ -26,7 +26,8 @@ class LoginViewController: UIViewController {
         errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
         
-        // Do any additional setup after loading the view.
+        //passwordText.isSecureTextEntry = true
+        
     }
     
     @IBAction func loginButtonPressed(_ sender: Any) {

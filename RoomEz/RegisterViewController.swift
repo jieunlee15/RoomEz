@@ -11,7 +11,6 @@ import FirebaseAuth
 class RegisterViewController: UIViewController {
     
     @IBOutlet weak var errorMessage: UILabel!
-    @IBOutlet weak var usernameText: UITextField!
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
     @IBOutlet weak var confirmPasswordText: UITextField!
@@ -28,6 +27,8 @@ class RegisterViewController: UIViewController {
         errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
         
+        //passwordText.isSecureTextEntry = true
+        //confirmPasswordText.isSecureTextEntry = true
         // Do any additional setup after loading the view.
     }
     
