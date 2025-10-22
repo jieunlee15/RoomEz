@@ -32,9 +32,11 @@ class WelcomeViewController: UIViewController {
         }
     
     @IBAction func loginButtonPressed(_ sender: Any) {
+        performSegue(withIdentifier: "toLogin", sender: self)
     }
     
     @IBAction func registerButtonPressed(_ sender: Any) {
+        performSegue(withIdentifier: "toRegister", sender: self)
     }
     /*
     // MARK: - Navigation

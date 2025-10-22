@@ -9,7 +9,7 @@ import UIKit
 import FirebaseAuth
 
 class RegisterViewController: UIViewController {
-
+    
     @IBOutlet weak var errorMessage: UILabel!
     @IBOutlet weak var usernameText: UITextField!
     @IBOutlet weak var emailText: UITextField!
@@ -24,8 +24,10 @@ class RegisterViewController: UIViewController {
         registerButton.layer.cornerRadius = 10
         registerButton.clipsToBounds = true
         
+        errorMessage.textColor = .systemRed
+        errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
-
+        
         // Do any additional setup after loading the view.
     }
     
@@ -50,18 +52,21 @@ class RegisterViewController: UIViewController {
             } else {
                 self.errorMessage.text = ""
                 // Navigate to next screen (or dismiss)
-                self.performSegue(withIdentifier: "goToHome", sender: self)
-        
-        
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+                self.performSegue(withIdentifier: "toMessage", sender: self)
+                
+                
+                
+                /*
+                 // MARK: - Navigation
+                 
+                 // In a storyboard-based application, you will often want to do a little preparation before navigation
+                 override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+                 // Get the new view controller using segue.destination.
+                 // Pass the selected object to the new view controller.
+                 }
+                 */
+                
+            }
+        }
     }
-    */
-
 }
