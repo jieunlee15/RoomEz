@@ -7,6 +7,7 @@ import UIKit
 
 class TaskListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
+
     @IBOutlet weak var tableView: UITableView!
 
     // Sample in-memory data for alpha
@@ -25,18 +26,15 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
 
     // MARK: - Add task
     @IBAction func addTaskTapped(_ sender: UIBarButtonItem) {
-        let alert = UIAlertController(title: "New Task", message: "Enter task title", preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = "e.g., Take out trash" }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
-            guard let title = alert.textFields?.first?.text, !title.isEmpty else { return }
-            let newTask = RoomTask(title: title, details: nil, dueDate: nil, assignee: nil, isCompleted: false, createdAt: Date())
-            self.tasks.insert(newTask, at: 0)
-            self.tableView.reloadData()
-            self.showBanner(message: "🧹 New Task Added!")
-        }))
-        present(alert, animated: true)
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let vc = sb.instantiateViewController(withIdentifier: "NewTaskVC") as! NewTaskViewController
+        vc.modalPresentationStyle = .pageSheet
+        vc.delegate = self
+        vc.editingTask = nil
+        vc.editingIndex = nil
+        present(vc, animated: true)
     }
+
 
     // MARK: - UITableViewDataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -114,3 +112,16 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         }
     }
 }
+
+extension TaskListViewController: NewTaskDelegate {
+    func didCreateTask(_ task: RoomTask) {
+        tasks.insert(task, at: 0)
+        tableView.reloadData()
+    }
+    
+    func didUpdateTask(_ task: RoomTask, at index: Int) {
+        tasks[index] = task
+        tableView.reloadData()
+    }
+}
+
