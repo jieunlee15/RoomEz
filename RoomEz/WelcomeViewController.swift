@@ -25,7 +25,7 @@ class WelcomeViewController: UIViewController {
             registerButton.backgroundColor = .white
             registerButton.setTitleColor(.black, for: .normal)
             registerButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
-            registerButton.layer.borderWidth = 2
+            registerButton.layer.borderWidth = 1
             registerButton.layer.borderColor = UIColor.black.cgColor
             registerButton.layer.cornerRadius = 10
             registerButton.clipsToBounds = true
