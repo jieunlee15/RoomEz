@@ -57,9 +57,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     func didPostAnnouncement(_ announcement: Announcement) {
         announcements.insert(announcement, at: 0)
         tableView.reloadData()
-        if announcement.isAnonymous {
-            showNewAnnouncementBanner()
-        }
+        showNewAnnouncementBanner()
     }
     func showNewAnnouncementBanner() {
         let bannerHeight: CGFloat = 60
@@ -76,7 +74,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
 
         // Add label
         let label = UILabel()
-        label.text = "📢 New Anonymous Note Posted!"
+        label.text = "📢 New Note Posted!"
         label.textColor = .white
         label.font = UIFont.boldSystemFont(ofSize: 16)
         label.textAlignment = .center
