@@ -765,10 +765,11 @@
                                     <action selector="registerButtonPressed:" destination="0jd-1B-mBz" eventType="touchUpInside" id="kIu-Z0-K5q"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VkE-TS-ZAU">
-                                <rect key="frame" x="61" y="507.66666666666674" width="319" height="54"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VkE-TS-ZAU">
+                                <rect key="frame" x="52.666666666666657" y="507.66666666666674" width="335" height="54"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="54" id="gyZ-KM-M5e"/>
+                                    <constraint firstAttribute="width" constant="335" id="uzi-5Y-BwG"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
@@ -815,6 +816,7 @@
                             <constraint firstItem="90z-4b-d4w" firstAttribute="top" secondItem="8b4-gq-s8L" secondAttribute="top" constant="598" id="Ogr-L2-5jW"/>
                             <constraint firstItem="Sdi-hX-WFt" firstAttribute="centerX" secondItem="Ynh-LV-sYD" secondAttribute="centerX" id="Z2u-qv-9xa"/>
                             <constraint firstItem="90z-4b-d4w" firstAttribute="centerX" secondItem="Ynh-LV-sYD" secondAttribute="centerX" id="ZCk-O4-qdZ"/>
+                            <constraint firstItem="VkE-TS-ZAU" firstAttribute="centerX" secondItem="Ynh-LV-sYD" secondAttribute="centerX" id="dl1-0j-p0w"/>
                             <constraint firstItem="2Cj-co-Uny" firstAttribute="top" secondItem="HKH-p5-vXH" secondAttribute="bottom" constant="40" id="lWZ-GT-Ebd"/>
                             <constraint firstItem="HKH-p5-vXH" firstAttribute="leading" secondItem="8b4-gq-s8L" secondAttribute="leading" constant="20" id="pT9-9n-3hY"/>
                             <constraint firstItem="Sdi-hX-WFt" firstAttribute="top" secondItem="egB-F2-TuN" secondAttribute="bottom" constant="21" id="qLR-Wc-cYZ"/>
@@ -1005,7 +1007,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="iVk-Vo-z19"/>
+        <segue reference="HP5-HX-YFw"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="labelColor"/>
     <resources>
