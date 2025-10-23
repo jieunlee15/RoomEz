@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dZz-lZ-Mlb">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dZz-lZ-Mlb">
     <device id="retina6_9" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -94,11 +94,11 @@
             <objects>
                 <viewController id="YTW-tH-mOB" customClass="AnnouncementViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1EH-nx-lqn">
-                        <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
+                        <rect key="frame" x="0.0" y="0.0" width="440" height="884"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="rGZ-e9-GZj">
-                                <rect key="frame" x="0.0" y="178" width="440" height="778"/>
+                                <rect key="frame" x="0.0" y="56" width="440" height="828"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="AnnouncementCell" rowHeight="160" id="fmE-kK-RNT" customClass="AnnouncementCell" customModule="RoomEz" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="50" width="440" height="160"/>
@@ -197,7 +197,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Messages" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tew-Z0-9Bn">
-                                <rect key="frame" x="164.66666666666666" y="70" width="110.99999999999997" height="28.666666666666671"/>
+                                <rect key="frame" x="165" y="70" width="111" height="28.666666666666671"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -269,11 +269,11 @@
             <objects>
                 <viewController id="Ce6-6M-7EX" customClass="NewAnnouncementViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Qcl-ct-sdb">
-                        <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
+                        <rect key="frame" x="0.0" y="0.0" width="440" height="884"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Lucy" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="JRk-cd-K7j">
-                                <rect key="frame" x="47.666666666666657" y="287" width="345" height="41"/>
+                                <rect key="frame" x="47.666666666666657" y="165" width="345" height="41"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="41" id="Tsy-yy-fxQ"/>
                                     <constraint firstAttribute="width" constant="345" id="WQm-V5-uNI"/>
@@ -283,7 +283,7 @@
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" indicatorStyle="white" text="here is the content" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="R82-q1-3av">
-                                <rect key="frame" x="47.666666666666657" y="373" width="345" height="105"/>
+                                <rect key="frame" x="47.666666666666657" y="251" width="345" height="105"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="345" id="1uy-cr-bTJ"/>
@@ -294,13 +294,13 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Anonymous" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G1L-ui-gQU">
-                                <rect key="frame" x="20" y="520" width="88" height="20"/>
+                                <rect key="frame" x="20" y="398" width="88" height="20"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
                                 <color key="textColor" red="0.094117648899555206" green="0.094117648899555206" blue="0.094117648899555206" alpha="0.84705883260000003" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DRF-hl-dNi">
-                                <rect key="frame" x="52.666666666666657" y="776" width="335" height="53"/>
+                                <rect key="frame" x="52.666666666666657" y="654" width="335" height="53"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="TdP-20-q2A"/>
                                     <constraint firstAttribute="width" constant="335" id="sdl-xK-0BP"/>
@@ -317,13 +317,13 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Announcement" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1SC-kP-kUb">
-                                <rect key="frame" x="24" y="345" width="111" height="20"/>
+                                <rect key="frame" x="24" y="223" width="111" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <color key="textColor" red="0.5058823823928833" green="0.5058823823928833" blue="0.5058823823928833" alpha="0.84705883260000003" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pSZ-kA-kzt">
-                                <rect key="frame" x="24" y="259" width="32" height="20"/>
+                                <rect key="frame" x="24" y="137" width="32" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <color key="textColor" red="0.5058823823928833" green="0.5058823823928833" blue="0.5058823823928833" alpha="0.84705883260000003" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -378,6 +378,7 @@
                                 <connections>
                                     <action selector="copyCodeTapped:" destination="Xjw-95-BCg" eventType="touchUpInside" id="Ual-LM-Nuq"/>
                                     <action selector="joinButtonTapped:" destination="Ww3-hh-sL2" eventType="touchUpInside" id="2bp-1k-lN4"/>
+                                    <segue destination="7xI-c7-VXx" kind="presentation" identifier="afterJoinPressed" id="adP-oO-hsa"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Join a Group!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hgQ-40-Twf">
@@ -663,7 +664,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="3Uz-S8-5VU" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="YzB-U3-gDf">
-                        <rect key="frame" x="0.0" y="124" width="440" height="54"/>
+                        <rect key="frame" x="0.0" y="124" width="440" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -818,13 +819,13 @@
                                 </connections>
                             </pickerView>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6CM-dk-Jba">
-                                <rect key="frame" x="359" y="504.33333333333326" width="63" height="28"/>
+                                <rect key="frame" x="371" y="502.66666666666674" width="51" height="31"/>
                                 <connections>
                                     <action selector="dueDateSwitchChanged:" destination="1s8-Bg-kfh" eventType="valueChanged" id="qAA-VU-4uR"/>
                                 </connections>
                             </switch>
                             <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" style="compact" translatesAutoresizingMaskIntoConstraints="NO" id="E2V-JR-ilc">
-                                <rect key="frame" x="20" y="544.33333333333337" width="400" height="36"/>
+                                <rect key="frame" x="20" y="545.66666666666663" width="400" height="36"/>
                             </datePicker>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gIc-cM-VBU">
                                 <rect key="frame" x="20" y="820" width="76.666666666666671" height="44"/>
@@ -897,7 +898,7 @@
                     <tabBarItem key="tabBarItem" title="Announcement" id="x0h-gl-iuu"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="IE9-zG-y8h">
-                        <rect key="frame" x="0.0" y="124" width="440" height="54"/>
+                        <rect key="frame" x="0.0" y="0.0" width="440" height="56"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -915,7 +916,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="69l-KD-mZS" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="grE-P3-dMy">
-                        <rect key="frame" x="0.0" y="124" width="440" height="54"/>
+                        <rect key="frame" x="0.0" y="124" width="440" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>

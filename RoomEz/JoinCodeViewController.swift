@@ -21,6 +21,7 @@ class JoinCodeViewController: UIViewController {
             guard let enteredCode = codeTextField.text else { return }
             
             if enteredCode == correctCode {
+                performSegue(withIdentifier: "afterJoinPressed", sender: self)
                 UIPasteboard.general.string = enteredCode
                 
                 // Success alert
