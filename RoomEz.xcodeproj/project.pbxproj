@@ -15,22 +15,9 @@
 		F589DA1D2EA4A2730039C695 /* RoomEz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomEz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F589DA2F2EA4A2750039C695 /* Exceptions for "RoomEz" folder in "RoomEz" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = F589DA1C2EA4A2730039C695 /* RoomEz */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F589DA1F2EA4A2730039C695 /* RoomEz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F589DA2F2EA4A2750039C695 /* Exceptions for "RoomEz" folder in "RoomEz" target */,
-			);
 			path = RoomEz;
 			sourceTree = "<group>";
 		};
