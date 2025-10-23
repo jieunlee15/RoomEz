@@ -10,7 +10,7 @@ import UIKit
 class InitialMessageViewController: UIViewController {
 
     @IBAction func joinRoomTapped(_sender: UIButton) {
-        performSegue(withIdentifier: "showAnnouncements", sender: self)
+        performSegue(withIdentifier: "joinGroup", sender: self)
     }
 
     @IBAction func createRoomTapped(_sender: UIButton) {
