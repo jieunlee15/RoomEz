@@ -12,7 +12,8 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
     @IBOutlet weak var assigneePicker: UIPickerView!
     @IBOutlet weak var dueDatePicker: UIDatePicker!
     @IBOutlet weak var dueDateSwitch: UISwitch!
-
+    @IBOutlet weak var descriptionField: UITextField!
+    
     weak var delegate: NewTaskDelegate?
 
     // Editing support
@@ -69,10 +70,6 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
     // MARK: - Actions
     @IBAction func dueDateSwitchChanged(_ sender: UISwitch) {
         dueDatePicker.isHidden = !sender.isOn
-    }
-
-    @IBAction func cancelTapped(_ sender: Any) {
-        dismiss(animated: true)
     }
 
     @IBAction func saveTapped(_ sender: Any) {

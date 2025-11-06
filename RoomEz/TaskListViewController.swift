@@ -15,7 +15,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Tasks"
+        title = "Task"
         tableView.dataSource = self
         tableView.delegate = self
         tableView.allowsSelection = false                      // we’ll toggle via the button
