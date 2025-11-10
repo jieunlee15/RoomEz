@@ -5,103 +5,137 @@ protocol NewTaskDelegate: AnyObject {
     func didUpdateTask(_ task: RoomTask, at index: Int)
 }
 
-class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
-
-    // MARK: - Outlets (must be connected in storyboard)
+class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate {
+    
+    // MARK: - Outlets
     @IBOutlet weak var titleField: UITextField!
     @IBOutlet weak var assigneePicker: UIPickerView!
     @IBOutlet weak var dueDatePicker: UIDatePicker!
     @IBOutlet weak var dueDateSwitch: UISwitch!
-    @IBOutlet weak var descriptionField: UITextField!
+    @IBOutlet weak var descriptionView: UITextField!
     
     weak var delegate: NewTaskDelegate?
-
+    
     // Editing support
     var editingTask: RoomTask?
     var editingIndex: Int?
-
-    // Alpha: placeholder roommates (later: load from your group)
+    
+    // Placeholder roommate and category data
     let roommates = ["Unassigned", "Lucy", "Ananya", "Jieun", "Shriya", "Kirti"]
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        title = editingTask == nil ? "New Task" : "Edit Task"
+        
         assigneePicker.dataSource = self
         assigneePicker.delegate = self
-
+        
+        
         dueDatePicker.datePickerMode = .dateAndTime
         dueDatePicker.preferredDatePickerStyle = .compact
-
-        // Prefill if editing
-        if let t = editingTask {
-            titleField.text = t.title
-
-            if let a = t.assignee, let idx = roommates.firstIndex(of: a) {
-                assigneePicker.selectRow(idx, inComponent: 0, animated: false)
-            } else {
-                assigneePicker.selectRow(0, inComponent: 0, animated: false)
-            }
-
-            if let d = t.dueDate {
-                dueDateSwitch.isOn = true
-                dueDatePicker.isHidden = false
-                dueDatePicker.date = d
-            } else {
-                dueDateSwitch.isOn = false
-                dueDatePicker.isHidden = true
-            }
+        
+        setupUI()
+        populateIfEditing()
+    }
+    
+    // MARK: - Setup
+    private func setupUI() {
+        descriptionView.delegate = self
+        dueDatePicker.isHidden = !dueDateSwitch.isOn
+    }
+    
+    private func populateIfEditing() {
+        guard let t = editingTask else { return }
+        titleField.text = t.title
+        if let a = t.assignee, let idx = roommates.firstIndex(of: a) {
+            assigneePicker.selectRow(idx, inComponent: 0, animated: false)
         } else {
-            // Defaults for new task
             assigneePicker.selectRow(0, inComponent: 0, animated: false)
+        }
+        
+        if let d = t.dueDate {
+            dueDateSwitch.isOn = true
+            dueDatePicker.isHidden = false
+            dueDatePicker.date = d
+        } else {
             dueDateSwitch.isOn = false
             dueDatePicker.isHidden = true
         }
     }
-
+    
     // MARK: - Picker
     func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
+    
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        roommates.count
+        return roommates.count
     }
+    
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        roommates[row]
+        return roommates[row]
     }
-
+    
     // MARK: - Actions
     @IBAction func dueDateSwitchChanged(_ sender: UISwitch) {
         dueDatePicker.isHidden = !sender.isOn
     }
-
+    
+    @IBAction func cancelTapped(_ sender: Any) {
+        dismiss(animated: true)
+    }
+    
     @IBAction func saveTapped(_ sender: Any) {
         let titleText = titleField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !titleText.isEmpty else {
-            let alert = UIAlertController(title: "Oops", message: "Please enter a title", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+            // ... show alert
             return
         }
-
+        
         let assigneeSelection = roommates[assigneePicker.selectedRow(inComponent: 0)]
         let assigneeValue = (assigneeSelection == "Unassigned") ? nil : assigneeSelection
         let dueValue = dueDateSwitch.isOn ? dueDatePicker.date : nil
-
-        if var task = editingTask, let idx = editingIndex {
-            // Update existing
-            task.title = titleText
-            task.assignee = assigneeValue
-            task.dueDate = dueValue
-            delegate?.didUpdateTask(task, at: idx)
+        let details = (descriptionView.text == "Add details...") ? nil : descriptionView.text
+        
+        if let editingTask, let idx = editingIndex {
+            // Update existing task
+            let updatedTask = RoomTask(
+                id: editingTask.id,
+                title: titleText,
+                details: details,
+                dueDate: dueValue,
+                assignee: assigneeValue,
+                isCompleted: editingTask.isCompleted,
+                createdAt: editingTask.createdAt
+            )
+            delegate?.didUpdateTask(updatedTask, at: idx)
         } else {
-            // Create new
-            let newTask = RoomTask(title: titleText,
-                                   details: nil,
-                                   dueDate: dueValue,
-                                   assignee: assigneeValue,
-                                   isCompleted: false,
-                                   createdAt: Date())
+            // Create new task
+            let newTask = RoomTask(
+                title: titleText,
+                details: details,
+                dueDate: dueValue,
+                assignee: assigneeValue,
+                isCompleted: false,
+                createdAt: Date()
+            )
             delegate?.didCreateTask(newTask)
         }
-
-        dismiss(animated: true)
+        navigationController?.popViewController(animated: true)
     }
 }
+
+// MARK: - UITextViewDelegate for placeholder text
+extension NewTaskViewController: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.text == "Add details..." {
+            textView.text = ""
+            textView.textColor = .label
+        }
+    }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text.isEmpty {
+            textView.text = "Add details..."
+            textView.textColor = .placeholderText
+        }
+    }
+}
+

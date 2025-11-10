@@ -1,52 +1,176 @@
-//
-//  TaskListViewController.swift
-//  RoomEz
-//
-
 import UIKit
 
-class TaskListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class DateCell: UICollectionViewCell {
+    @IBOutlet weak var dayLabel: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
+    @IBOutlet weak var monthLabel: UILabel!
+}
 
+class TaskListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    var dates: [Date] = []
+    let calendar = Calendar.current
+    var selectedDate: Date?
 
+    @IBOutlet weak var calendarCollectionView: UICollectionView!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var segmentControl: UISegmentedControl! // FIXED: should be UISegmentedControl
 
-    // Sample in-memory data for alpha
-    var tasks: [RoomTask] = []
+    private var taskManager = TaskManager.shared
+    var filteredTasks: [RoomTask] = [] // FIXED: added filtered array
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Task"
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.allowsSelection = false                      // we’ll toggle via the button
-        tableView.rowHeight = 110       // <- fixed height for now
+        tableView.allowsSelection = false
+        tableView.rowHeight = 110
         tableView.estimatedRowHeight = 110
+        
+        calendarCollectionView.dataSource = self
+        calendarCollectionView.delegate = self
+        
+        generateDates()
+        selectedDate = dates.first
 
+        filteredTasks = taskManager.tasks // start with all tasks
+    }
+    
+    func generateDates() {
+        let today = Date()
+        for i in 0..<7 {
+            if let nextDate = calendar.date(byAdding: .day, value: i, to: today) {
+                dates.append(nextDate)
+            }
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        segmentChanged(segmentControl)
     }
 
-    // MARK: - Add task
+    // MARK: - Segmented Control
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+        filterTasks()
+        tableView.reloadData()
+    }
+
+    func filterTasks() {
+        switch segmentControl.selectedSegmentIndex {
+        case 0:
+            filteredTasks = taskManager.tasks
+        case 1:
+            filteredTasks = taskManager.tasks.filter { !$0.isCompleted }
+        case 2:
+            filteredTasks = taskManager.tasks.filter { !$0.isCompleted && $0.dueDate != nil }
+        case 3:
+            filteredTasks = taskManager.tasks.filter { $0.isCompleted }
+        default:
+            filteredTasks = taskManager.tasks
+        }
+
+                // Optional: filter by selected date
+        if let selected = selectedDate {
+            filteredTasks = filteredTasks.filter {
+            guard let due = $0.dueDate else { return true }
+            return calendar.isDate(due, inSameDayAs: selected)
+            }
+        }
+    }
+    
+    // MARK: - Collection View (Calendar)
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return dates.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateCell", for: indexPath) as! DateCell
+        let date = dates[indexPath.item]
+
+        let monthFormatter = DateFormatter()
+        monthFormatter.dateFormat = "MMM"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d"
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "E"
+
+        cell.monthLabel.text = monthFormatter.string(from: date)
+        cell.dateLabel.text = dateFormatter.string(from: date)
+        cell.dayLabel.text = dayFormatter.string(from: date)
+
+        // Highlight selected date
+        if let selected = selectedDate, calendar.isDate(selected, inSameDayAs: date) {
+            cell.backgroundColor = .black
+            cell.monthLabel.textColor = .white
+            cell.dateLabel.textColor = .white
+            cell.dayLabel.textColor = .white
+        } else {
+            cell.backgroundColor = .clear
+            cell.monthLabel.textColor = .black
+            cell.dateLabel.textColor = .black
+            cell.dayLabel.textColor = .darkGray
+        }
+
+        cell.layer.cornerRadius = 12
+        cell.layer.borderWidth = 1
+        cell.layer.borderColor = UIColor.black.withAlphaComponent(0.1).cgColor
+        cell.clipsToBounds = true
+
+        return cell
+    }
+
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectedDate = dates[indexPath.item]
+        filterTasks()
+        tableView.reloadData()
+        collectionView.reloadData()
+    }
+
+    // Layout
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 70, height: 80)
+    }
+
+
+    // MARK: - Add Task
     @IBAction func addTaskTapped(_ sender: UIBarButtonItem) {
-        let sb = UIStoryboard(name: "Main", bundle: nil)
-        let vc = sb.instantiateViewController(withIdentifier: "NewTaskVC") as! NewTaskViewController
-        vc.modalPresentationStyle = .pageSheet
-        vc.delegate = self
-        vc.editingTask = nil
-        vc.editingIndex = nil
-        present(vc, animated: true)
+        performSegue(withIdentifier: "showNewTask", sender: self)
     }
 
-
-    // MARK: - UITableViewDataSource
+    // MARK: - Table View
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tasks.count
+        return filteredTasks.count
+    }
+    
+    private func presentEditor(task: RoomTask?, index: Int? = nil) {
+            performSegue(withIdentifier: "showNewTask", sender: (task, index))
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showNewTask",
+            let dest = segue.destination as? NewTaskViewController {
+                
+            dest.delegate = self
+                
+            if let (task, index) = sender as? (RoomTask, Int) {
+                    // Editing existing task
+                dest.editingTask = task
+                dest.editingIndex = index
+            } else {
+                    // Creating new task
+                dest.editingTask = nil
+                dest.editingIndex = nil
+            }
+        }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath) as! TaskCell
-        let task = tasks[indexPath.row]
+        let task = filteredTasks[indexPath.row]
         cell.configure(with: task)
 
-        // Wire the button tap to toggle this row’s task
         cell.onStatusTapped = { [weak self, weak tableView, weak cell] in
             guard
                 let self = self,
@@ -55,9 +179,15 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
                 let tappedIndexPath = tableView.indexPath(for: cell)
             else { return }
 
-            var t = self.tasks[tappedIndexPath.row]
+            var t = self.filteredTasks[tappedIndexPath.row]
             t.isCompleted.toggle()
-            self.tasks[tappedIndexPath.row] = t
+
+            // Update both arrays
+            if let originalIndex = self.taskManager.tasks.firstIndex(where: {$0.id == t.id }) {
+                self.taskManager.updateTask(t, at: originalIndex)
+            }
+            self.filteredTasks[tappedIndexPath.row] = t
+
             tableView.reloadRows(at: [tappedIndexPath], with: .automatic)
             self.showBanner(message: t.isCompleted ? "Task Completed!" : "Task Reopened")
         }
@@ -65,26 +195,31 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         return cell
     }
 
-    // (Optional) If you previously had didSelectRowAt toggling, remove it or leave it empty since allowsSelection=false
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) { }
-    
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
 
-        // DELETE
         let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, done in
             guard let self = self else { return }
-            self.tasks.remove(at: indexPath.row)
+
+            let taskToDelete = self.filteredTasks[indexPath.row]
+            self.taskManager.tasks.removeAll { $0.id == taskToDelete.id }
+            self.filteredTasks.remove(at: indexPath.row)
+
             tableView.deleteRows(at: [indexPath], with: .automatic)
             self.showBanner(message: "Task deleted")
             done(true)
         }
 
-        // EDIT
         let edit = UIContextualAction(style: .normal, title: "Edit") { [weak self] _, _, done in
             guard let self = self else { return }
-            self.presentEditor(task: self.tasks[indexPath.row], index: indexPath.row)
+
+            let taskToEdit = self.filteredTasks[indexPath.row]
+            if let indexInAll = self.taskManager.tasks.firstIndex(where: { $0.id == taskToEdit.id }) {
+                self.presentEditor(task: taskToEdit, index: indexInAll)
+            } else {
+                self.presentEditor(task: taskToEdit, index: nil)
+            }
             done(true)
         }
         edit.backgroundColor = .systemBlue
@@ -92,8 +227,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         return UISwipeActionsConfiguration(actions: [delete, edit])
     }
 
-
-    // MARK: - Banner (matches your Announcements style)
+    // MARK: - Banner
     func showBanner(message: String) {
         let bannerHeight: CGFloat = 60
         let banner = UIView()
@@ -136,33 +270,25 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             }, completion: { _ in banner.removeFromSuperview() })
         }
     }
-    
-    private func presentEditor(task: RoomTask?, index: Int? = nil) {
-        let sb = UIStoryboard(name: "Main", bundle: nil)
-        let vc = sb.instantiateViewController(withIdentifier: "NewTaskVC") as! NewTaskViewController
-        vc.modalPresentationStyle = .pageSheet
-        vc.delegate = self
-        vc.editingTask = task
-        vc.editingIndex = index
-        present(vc, animated: true)
-    }
-
-    
 }
 
+// MARK: - Delegate
 extension TaskListViewController: NewTaskDelegate {
     func didCreateTask(_ task: RoomTask) {
-        tasks.insert(task, at: 0)
+        taskManager.addTask(task)
+        segmentChanged(segmentControl)
         tableView.reloadData()
+        showBanner(message: "New task added")
     }
-    
+
     func didUpdateTask(_ task: RoomTask, at index: Int) {
-        guard tasks.indices.contains(index) else { return }
-        tasks[index] = task
-        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+        guard taskManager.tasks.indices.contains(index) else { return }
+        taskManager.updateTask(task, at: index)
+        if let filteredIndex = filteredTasks.firstIndex(where: { $0.id == task.id }) {
+            filteredTasks[filteredIndex] = task
+        }
+        tableView.reloadData()
         showBanner(message: "Task updated")
     }
-    
-    
 }
 

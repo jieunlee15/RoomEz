@@ -21,8 +21,6 @@ class TaskCell: UITableViewCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        statusButton.layer.cornerRadius = 10
-        statusButton.clipsToBounds = true
     }
 
     func configure(with task: RoomTask) {
@@ -36,10 +34,15 @@ class TaskCell: UITableViewCell {
         }
         if task.isCompleted {
             statusButton.setTitle("Done", for: .normal)
-            statusButton.backgroundColor = .systemGreen
+            statusButton.layer.cornerRadius = 10
+            statusButton.clipsToBounds = true
+            statusButton.backgroundColor = .systemGray
         } else {
-            statusButton.setTitle("Mark", for: .normal)
-            statusButton.backgroundColor = .systemGray4
+            statusButton.setTitle("To Do", for: .normal)
+            statusButton.layer.cornerRadius = 10
+            statusButton.backgroundColor = .black
+            statusButton.setTitleColor(.white, for: .normal)
+            statusButton.clipsToBounds = true
         }
     }
 

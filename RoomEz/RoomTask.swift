@@ -7,13 +7,24 @@
 
 import Foundation
 
-// represents one task/chore in the app
-struct RoomTask {
-    var id: String = UUID().uuidString
-    var title: String
-    var details: String?
-    var dueDate: Date?
-    var assignee: String?        // roommate name
-    var isCompleted: Bool = false
-    var createdAt: Date = Date()
+
+class RoomTask {
+    let id: UUID
+    let title: String
+    let details: String?
+    let dueDate: Date?
+    let assignee: String?
+    var isCompleted: Bool
+    let createdAt: Date
+        
+    // Update your initializer
+    init(id: UUID = UUID(), title: String, details: String?, dueDate: Date?, assignee: String?, isCompleted: Bool, createdAt: Date) {
+        self.id = id
+        self.title = title
+        self.details = details
+        self.dueDate = dueDate
+        self.assignee = assignee
+        self.isCompleted = isCompleted
+        self.createdAt = createdAt
+    }
 }
