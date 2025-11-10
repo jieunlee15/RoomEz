@@ -23,21 +23,22 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     
     // Filtered array: only uncompleted tasks
     private var filteredTasks: [RoomTask] {
-        taskManager.tasks.filter { !$0.isCompleted }
+        taskManager.tasks.filter { $0.status != .done }
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         let lineView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 0.5))
-        lineView.backgroundColor = UIColor.separator // Or any other color
+        lineView.backgroundColor = UIColor.separator
         tableView.tableHeaderView = lineView
+        
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = 110
         tableView.estimatedRowHeight = 110
+        
         setupCircularProgress()
         greetingLabel.text = "Hello Lucy!"
-        
         setupTaskObservation()
     }
     private func setupTaskObservation() {
@@ -46,7 +47,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Refresh data when view appears
         updateProgress()
         tableView.reloadData()
     }
@@ -89,7 +89,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             return
         }
 
-        let completed = tasks.filter { $0.isCompleted }.count
+        let completed = tasks.filter { $0.status == .done }.count
         let ratio = CGFloat(completed) / CGFloat(tasks.count)
 
         UIView.animate(withDuration: 0.5) {
@@ -133,17 +133,29 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             // Update the task in the main tasks array
             if let originalIndex = self.taskManager.tasks.firstIndex(where: { $0.id == task.id }) {
                 var updatedTask = task
-                updatedTask.isCompleted.toggle()
+                // 🔁 Cycle through the three states
+                switch updatedTask.status {
+                case .todo:
+                    updatedTask.status = .inProgress
+                case .inProgress:
+                    updatedTask.status = .done
+                case .done:
+                    updatedTask.status = .todo
+                }
                 self.taskManager.updateTask(updatedTask, at: originalIndex)
             }
-
-            // Since filteredTasks is computed, we just reload the table view
-            // This will automatically remove completed tasks from the dashboard
             tableView.reloadData()
             self.updateProgress()
                     
                     // Show banner message
-            self.showBanner(message: task.isCompleted ? "Task Completed! 🎉" : "Task Reopened")
+            switch task.status {
+            case .todo:
+                self.showBanner(message: "Task started 🚀")
+            case .inProgress:
+                self.showBanner(message: "Task marked in progress 🔧")
+            case .done:
+                self.showBanner(message: "Task completed 🎉")
+            }
         }
         return cell
     }

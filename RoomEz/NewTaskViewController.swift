@@ -79,14 +79,16 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         dueDatePicker.isHidden = !sender.isOn
     }
     
-    @IBAction func cancelTapped(_ sender: Any) {
-        dismiss(animated: true)
-    }
-    
     @IBAction func saveTapped(_ sender: Any) {
         let titleText = titleField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !titleText.isEmpty else {
-            // ... show alert
+            let alert = UIAlertController(
+                title: "Missing Title",
+                message: "Please enter a task title before saving.",
+                preferredStyle: .alert
+            )
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(alert, animated: true)
             return
         }
         
@@ -94,7 +96,7 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         let assigneeValue = (assigneeSelection == "Unassigned") ? nil : assigneeSelection
         let dueValue = dueDateSwitch.isOn ? dueDatePicker.date : nil
         let details = (descriptionView.text == "Add details...") ? nil : descriptionView.text
-        
+    
         if let editingTask, let idx = editingIndex {
             // Update existing task
             let updatedTask = RoomTask(
@@ -103,7 +105,7 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                 details: details,
                 dueDate: dueValue,
                 assignee: assigneeValue,
-                isCompleted: editingTask.isCompleted,
+                status: editingTask.status,
                 createdAt: editingTask.createdAt
             )
             delegate?.didUpdateTask(updatedTask, at: idx)
@@ -114,7 +116,7 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                 details: details,
                 dueDate: dueValue,
                 assignee: assigneeValue,
-                isCompleted: false,
+                status: .todo,
                 createdAt: Date()
             )
             delegate?.didCreateTask(newTask)

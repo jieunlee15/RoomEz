@@ -24,7 +24,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         title = "Task"
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.allowsSelection = false
+        tableView.allowsSelection = true
         tableView.rowHeight = 110
         tableView.estimatedRowHeight = 110
         
@@ -60,17 +60,20 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
     func filterTasks() {
         switch segmentControl.selectedSegmentIndex {
         case 0:
+            // All tasks
             filteredTasks = taskManager.tasks
         case 1:
-            filteredTasks = taskManager.tasks.filter { !$0.isCompleted }
+            // To Do
+            filteredTasks = taskManager.tasks.filter { $0.status == .todo }
         case 2:
-            filteredTasks = taskManager.tasks.filter { !$0.isCompleted && $0.dueDate != nil }
+            // In Progress (and maybe due date tasks)
+            filteredTasks = taskManager.tasks.filter { $0.status == .inProgress && $0.dueDate != nil }
         case 3:
-            filteredTasks = taskManager.tasks.filter { $0.isCompleted }
+            // Done
+            filteredTasks = taskManager.tasks.filter { $0.status == .done }
         default:
             filteredTasks = taskManager.tasks
         }
-
                 // Optional: filter by selected date
         if let selected = selectedDate {
             filteredTasks = filteredTasks.filter {
@@ -165,6 +168,19 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             }
         }
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedTask = filteredTasks[indexPath.row]
+        
+        // Instantiate from storyboard
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let detailVC = storyboard.instantiateViewController(withIdentifier: "TaskDetailViewController") as? TaskDetailViewController {
+            detailVC.task = selectedTask
+            detailVC.taskIndex = indexPath.row
+            navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
+
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath) as! TaskCell
@@ -180,7 +196,15 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             else { return }
 
             var t = self.filteredTasks[tappedIndexPath.row]
-            t.isCompleted.toggle()
+            // Cycle through statuses
+            switch t.status {
+            case .todo:
+                t.status = .inProgress
+            case .inProgress:
+                t.status = .done
+            case .done:
+                t.status = .todo
+            }
 
             // Update both arrays
             if let originalIndex = self.taskManager.tasks.firstIndex(where: {$0.id == t.id }) {
@@ -189,7 +213,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             self.filteredTasks[tappedIndexPath.row] = t
 
             tableView.reloadRows(at: [tappedIndexPath], with: .automatic)
-            self.showBanner(message: t.isCompleted ? "Task Completed!" : "Task Reopened")
+            self.showBanner(message: "Status: \(t.status.rawValue)")
         }
 
         return cell

@@ -15,6 +15,7 @@ class TaskManager: ObservableObject {
         loadExampleTasks()
     }
     
+    // MARK: - Example data
     private func loadExampleTasks() {
         tasks = [
             RoomTask(
@@ -23,7 +24,7 @@ class TaskManager: ObservableObject {
                 details: nil,
                 dueDate: Date(),
                 assignee: "Lucy",
-                isCompleted: false,
+                status: .todo,
                 createdAt: Date()
             ),
             RoomTask(
@@ -32,7 +33,16 @@ class TaskManager: ObservableObject {
                 details: nil,
                 dueDate: Date().addingTimeInterval(86400),
                 assignee: "Jieun",
-                isCompleted: true,
+                status: .inProgress,
+                createdAt: Date()
+            ),
+            RoomTask(
+                id: UUID(),
+                title: "Cleaning",
+                details: nil,
+                dueDate: Date().addingTimeInterval(172800),
+                assignee: "Ananya",
+                status: .done,
                 createdAt: Date()
             )
         ]
@@ -48,15 +58,9 @@ class TaskManager: ObservableObject {
         tasks[index] = task
     }
     
-    func markTaskCompleted(_ taskId: UUID) {
+    func updateStatus(for taskId: UUID, to newStatus: TaskStatus) {
         if let index = tasks.firstIndex(where: { $0.id == taskId }) {
-            tasks[index].isCompleted = true
-        }
-    }
-    
-    func markTaskIncomplete(_ taskId: UUID) {
-        if let index = tasks.firstIndex(where: { $0.id == taskId }) {
-            tasks[index].isCompleted = false
+            tasks[index].status = newStatus
         }
     }
     

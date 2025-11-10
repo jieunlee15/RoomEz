@@ -7,6 +7,11 @@
 
 import Foundation
 
+enum TaskStatus: String, Codable {
+    case todo = "To Do"
+    case inProgress = "In Progress"
+    case done = "Done"
+}
 
 class RoomTask {
     let id: UUID
@@ -14,17 +19,17 @@ class RoomTask {
     let details: String?
     let dueDate: Date?
     let assignee: String?
-    var isCompleted: Bool
+    var status: TaskStatus = .todo
     let createdAt: Date
         
     // Update your initializer
-    init(id: UUID = UUID(), title: String, details: String?, dueDate: Date?, assignee: String?, isCompleted: Bool, createdAt: Date) {
+    init(id: UUID = UUID(), title: String, details: String?, dueDate: Date?, assignee: String?, status: TaskStatus?, createdAt: Date) {
         self.id = id
         self.title = title
         self.details = details
         self.dueDate = dueDate
         self.assignee = assignee
-        self.isCompleted = isCompleted
+        self.status = status ?? .todo
         self.createdAt = createdAt
     }
 }

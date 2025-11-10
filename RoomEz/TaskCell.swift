@@ -32,17 +32,39 @@ class TaskCell: UITableViewCell {
         } else {
             dueDateLabel.text = "No due date"
         }
-        if task.isCompleted {
-            statusButton.setTitle("Done", for: .normal)
-            statusButton.layer.cornerRadius = 10
-            statusButton.clipsToBounds = true
-            statusButton.backgroundColor = .systemGray
-        } else {
-            statusButton.setTitle("To Do", for: .normal)
-            statusButton.layer.cornerRadius = 10
-            statusButton.backgroundColor = .black
-            statusButton.setTitleColor(.white, for: .normal)
-            statusButton.clipsToBounds = true
+
+        statusButton.layer.cornerRadius = 10
+        statusButton.clipsToBounds = true
+        statusButton.translatesAutoresizingMaskIntoConstraints = false
+
+        // Fixed height constraint
+        NSLayoutConstraint.activate([
+            statusButton.heightAnchor.constraint(equalToConstant: 22),
+            statusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            statusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
+        ])
+
+        // Helper to set title + font reliably
+        func setStatusButton(title: String, titleColor: UIColor, backgroundColor: UIColor, borderWidth: CGFloat = 0, borderColor: UIColor? = nil) {
+            let font = UIFont.systemFont(ofSize: 12, weight: .regular)
+            let attributedTitle = NSAttributedString(string: title, attributes: [.font: font, .foregroundColor: titleColor])
+            statusButton.setAttributedTitle(attributedTitle, for: .normal)
+            statusButton.backgroundColor = backgroundColor
+            statusButton.layer.borderWidth = borderWidth
+            if let borderColor = borderColor {
+                statusButton.layer.borderColor = borderColor.cgColor
+            } else {
+                statusButton.layer.borderColor = nil
+            }
+        }
+
+        switch task.status {
+        case .todo:
+            setStatusButton(title: "To Do", titleColor: .black, backgroundColor: .white, borderWidth: 1, borderColor: .black)
+        case .inProgress:
+            setStatusButton(title: "In Progress", titleColor: .white, backgroundColor: .black)
+        case .done:
+            setStatusButton(title: "Done", titleColor: .white, backgroundColor: .systemGray)
         }
     }
 
