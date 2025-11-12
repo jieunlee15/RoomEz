@@ -14,7 +14,7 @@ class JoinCodeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
     }
-
+    
     @IBAction func joinButtonTapped(_ sender: UIButton) {
         guard let enteredCode = codeTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !enteredCode.isEmpty else {
@@ -30,7 +30,7 @@ class JoinCodeViewController: UIViewController {
             showAlert(title: "Error", message: "You must be logged in to join a room.")
             return
         }
-
+        
         let roomRef = db.collection("roommateGroups").document(code)
         
         roomRef.getDocument { document, error in
@@ -53,6 +53,9 @@ class JoinCodeViewController: UIViewController {
                     print("Error joining room: \(error)")
                     self.showAlert(title: "Error", message: "Could not join room. Please try again.")
                 } else {
+                    // Save the room code for later screens (Dashboard, Announcements, etc.)
+                    UserDefaults.standard.set(code, forKey: "currentRoomCode")
+                    
                     UIPasteboard.general.string = code
                     print("Joined room \(code) successfully!")
                     
@@ -68,7 +71,6 @@ class JoinCodeViewController: UIViewController {
             }
         }
     }
-
     func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))

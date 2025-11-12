@@ -3,6 +3,8 @@
 //  Created by Kirti Ganesh on 10/22/25.
 
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
 class DateCell: UICollectionViewCell {
     @IBOutlet weak var dayLabel: UILabel!
@@ -15,6 +17,8 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
     var dates: [Date] = []
     let calendar = Calendar.current
     var selectedDate: Date?
+    private let db = Firestore.firestore()
+    private var notificationsEnabled = true
 
     @IBOutlet weak var calendarCollectionView: UICollectionView!
     @IBOutlet weak var tableView: UITableView!
@@ -25,6 +29,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadNotificationPreference()
         title = "Task"
         tableView.dataSource = self
         tableView.delegate = self
@@ -40,6 +45,17 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
 
         filteredTasks = taskManager.tasks // start with all tasks
     }
+    
+    private func loadNotificationPreference() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        db.collection("users").document(uid).getDocument { [weak self] snap, _ in
+            guard let self = self else { return }
+            if let data = snap?.data() {
+                self.notificationsEnabled = data["notificationOn"] as? Bool ?? true
+            }
+        }
+    }
+
     
     func generateDates() {
         let today = Date()
@@ -257,6 +273,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
 
     // MARK: - Banner
     func showBanner(message: String) {
+        guard notificationsEnabled else { return }
         let bannerHeight: CGFloat = 60
         let banner = UIView()
         banner.backgroundColor = .systemBlue

@@ -165,8 +165,18 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showTaskList",
-           let destination = segue.destination as? TaskListViewController {        }
+           let destination = segue.destination as? TaskListViewController {
+            // (nothing special yet)
+        }
+        
+        if segue.identifier == "showAnnouncements",
+           let dest = segue.destination as? AnnouncementViewController {
+            // pull the saved code from UserDefaults
+            let code = UserDefaults.standard.string(forKey: "currentRoomCode")
+            dest.roomCode = code
+        }
     }
+
     func showBanner(message: String) {
         let bannerHeight: CGFloat = 60
         let banner = UIView()
