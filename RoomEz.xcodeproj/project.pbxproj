@@ -7,9 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34033ED22EC45441004AAA14 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 34033ED12EC45441004AAA14 /* FirebaseStorage */; };
+		34E2E1292EC41C110036DE7A /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 34E2E1282EC41C110036DE7A /* FirebaseAuth */; };
+		34E2E12B2EC41C110036DE7A /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 34E2E12A2EC41C110036DE7A /* FirebaseFirestore */; };
 		B3349DC92EC41A69003FD853 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B3349DC82EC41A69003FD853 /* FirebaseFirestore */; };
-		F50535692EA9A6000030460C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = F50535682EA9A6000030460C /* FirebaseCore */; };
-		F505356B2EA9A6820030460C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F505356A2EA9A6820030460C /* FirebaseAuth */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,9 +43,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F50535692EA9A6000030460C /* FirebaseCore in Frameworks */,
-				F505356B2EA9A6820030460C /* FirebaseAuth in Frameworks */,
 				B3349DC92EC41A69003FD853 /* FirebaseFirestore in Frameworks */,
+				34033ED22EC45441004AAA14 /* FirebaseStorage in Frameworks */,
+				34E2E1292EC41C110036DE7A /* FirebaseAuth in Frameworks */,
+				34E2E12B2EC41C110036DE7A /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,9 +89,10 @@
 			);
 			name = RoomEz;
 			packageProductDependencies = (
-				F50535682EA9A6000030460C /* FirebaseCore */,
-				F505356A2EA9A6820030460C /* FirebaseAuth */,
 				B3349DC82EC41A69003FD853 /* FirebaseFirestore */,
+				34E2E1282EC41C110036DE7A /* FirebaseAuth */,
+				34E2E12A2EC41C110036DE7A /* FirebaseFirestore */,
+				34033ED12EC45441004AAA14 /* FirebaseStorage */,
 			);
 			productName = RoomEz;
 			productReference = F589DA1D2EA4A2730039C695 /* RoomEz.app */;
@@ -120,7 +123,7 @@
 			mainGroup = F589DA142EA4A2730039C695;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				F50535672EA9A6000030460C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				34E2E1272EC41BD10036DE7A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F589DA1E2EA4A2730039C695 /* Products */;
@@ -160,6 +163,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QQUT8Z28X2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomEz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -167,6 +171,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -187,6 +192,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QQUT8Z28X2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomEz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -194,6 +200,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -350,30 +357,35 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		F50535672EA9A6000030460C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		34E2E1272EC41BD10036DE7A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 12.4.0;
+				minimumVersion = 12.5.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		34033ED12EC45441004AAA14 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34E2E1272EC41BD10036DE7A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		34E2E1282EC41C110036DE7A /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34E2E1272EC41BD10036DE7A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		34E2E12A2EC41C110036DE7A /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34E2E1272EC41BD10036DE7A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		B3349DC82EC41A69003FD853 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FirebaseFirestore;
-		};
-		F50535682EA9A6000030460C /* FirebaseCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F50535672EA9A6000030460C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCore;
-		};
-		F505356A2EA9A6820030460C /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F50535672EA9A6000030460C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
