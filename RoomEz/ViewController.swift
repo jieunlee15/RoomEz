@@ -1,9 +1,6 @@
-//
 //  ViewController.swift
 //  RoomEz
-//
 //  Created by Jieun Lee on 10/18/25.
-//
 
 import UIKit
 

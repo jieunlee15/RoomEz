@@ -1,3 +1,7 @@
+//  RoomTask.swift
+//  RoomEz
+//  Created by Kirti Ganesh on 10/22/25.
+
 import Foundation
 
 enum TaskStatus: String, Codable {

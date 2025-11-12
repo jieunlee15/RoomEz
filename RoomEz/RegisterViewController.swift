@@ -1,9 +1,6 @@
-//
 //  RegisterViewController.swift
 //  RoomEz
-//
 //  Created by Ananya Singh on 10/20/25.
-//
 
 import UIKit
 import FirebaseAuth
@@ -54,19 +51,6 @@ class RegisterViewController: UIViewController {
                 self.errorMessage.text = ""
                 // Navigate to next screen (or dismiss)
                 self.performSegue(withIdentifier: "toMessage", sender: self)
-                
-                
-                
-                /*
-                 // MARK: - Navigation
-                 
-                 // In a storyboard-based application, you will often want to do a little preparation before navigation
-                 override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-                 // Get the new view controller using segue.destination.
-                 // Pass the selected object to the new view controller.
-                 }
-                 */
-                
             }
         }
     }

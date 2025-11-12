@@ -1,9 +1,6 @@
-//
 //  LoginViewController.swift
 //  RoomEz
-//
 //  Created by Ananya Singh on 10/20/25.
-//
 
 import UIKit
 import FirebaseAuth
@@ -52,16 +49,6 @@ class LoginViewController: UIViewController {
                 // Assuming you have a segue in your storyboard with identifier "goToHome"
                 self.performSegue(withIdentifier: "toMessageLog", sender: self)
             }
-            
-            /*
-             // MARK: - Navigation
-             
-             // In a storyboard-based application, you will often want to do a little preparation before navigation
-             override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-             // Get the new view controller using segue.destination.
-             // Pass the selected object to the new view controller.
-             }
-             */
         }
     }
 }

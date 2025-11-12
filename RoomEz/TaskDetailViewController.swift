@@ -1,9 +1,6 @@
-//
 //  TaskDetailViewController.swift
 //  RoomEz
-//
 //  Created by Jieun Lee on 11/10/25.
-//
 
 import UIKit
 

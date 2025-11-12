@@ -1,9 +1,7 @@
-//
 //  TaskManager.swift
 //  RoomEz
-//
 //  Created by Jieun Lee on 11/9/25.
-//
+
 import Foundation
 
 class TaskManager: ObservableObject {

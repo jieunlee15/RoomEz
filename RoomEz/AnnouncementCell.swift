@@ -1,9 +1,6 @@
-//
 //  AnnouncementCell.swift
 //  RoomEz
-//
 //  Created by Jieun Lee on 10/21/25.
-//
 
 import UIKit
 
