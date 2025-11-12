@@ -15,6 +15,10 @@ class CreateNewPassViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
+    @IBAction func resetPassPressed(_ sender: Any) {
+        performSegue(withIdentifier: "toPassChange", sender: self)
+    }
+    
 
     /*
     // MARK: - Navigation

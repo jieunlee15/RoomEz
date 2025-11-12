@@ -15,7 +15,10 @@ class PasswordChangedViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
-
+    @IBAction func backToLoginPressed(_ sender: Any) {
+        performSegue(withIdentifier: "backToLogin", sender: self)
+    }
+    
     /*
     // MARK: - Navigation
 
