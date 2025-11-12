@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B3349DC92EC41A69003FD853 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B3349DC82EC41A69003FD853 /* FirebaseFirestore */; };
 		F50535692EA9A6000030460C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = F50535682EA9A6000030460C /* FirebaseCore */; };
 		F505356B2EA9A6820030460C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F505356A2EA9A6820030460C /* FirebaseAuth */; };
 /* End PBXBuildFile section */
@@ -43,6 +44,7 @@
 			files = (
 				F50535692EA9A6000030460C /* FirebaseCore in Frameworks */,
 				F505356B2EA9A6820030460C /* FirebaseAuth in Frameworks */,
+				B3349DC92EC41A69003FD853 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,6 +89,7 @@
 			packageProductDependencies = (
 				F50535682EA9A6000030460C /* FirebaseCore */,
 				F505356A2EA9A6820030460C /* FirebaseAuth */,
+				B3349DC82EC41A69003FD853 /* FirebaseFirestore */,
 			);
 			productName = RoomEz;
 			productReference = F589DA1D2EA4A2730039C695 /* RoomEz.app */;
@@ -358,6 +361,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B3349DC82EC41A69003FD853 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseFirestore;
+		};
 		F50535682EA9A6000030460C /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F50535672EA9A6000030460C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
