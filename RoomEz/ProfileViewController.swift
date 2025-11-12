@@ -1,9 +1,7 @@
-//
 //  ProfileViewController.swift
 //  RoomEz
-//
 //  Created by Shriya Venkataraman on 11/11/25.
-//
+
 import UIKit
 import FirebaseAuth
 import FirebaseStorage

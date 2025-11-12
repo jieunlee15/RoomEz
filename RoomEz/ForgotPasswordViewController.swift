@@ -1,9 +1,6 @@
-//
 //  ForgotPasswordViewController.swift
 //  RoomEz
-//
 //  Created by Ananya Singh on 11/11/25.
-//
 
 import UIKit
 import FirebaseAuth
