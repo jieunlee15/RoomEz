@@ -50,4 +50,8 @@ class InviteRoomieViewController: UIViewController {
             }
         }
     }
+<<<<<<< Updated upstream
 }
+=======
+
+>>>>>>> Stashed changes
