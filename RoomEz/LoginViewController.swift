@@ -30,6 +30,10 @@ class LoginViewController: UIViewController {
         
     }
     
+    @IBAction func forgotPassPressed(_ sender: Any) {
+        performSegue(withIdentifier: "toForgotPassword", sender: self)
+    }
+    
     @IBAction func loginButtonPressed(_ sender: Any) {
         guard let email = emailText.text, !email.isEmpty,
               let password = passwordText.text, !password.isEmpty else {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="8zX-j5-VCc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dZz-lZ-Mlb">
     <device id="retina6_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
@@ -602,7 +602,8 @@
                                     <fontDescription key="titleFontDescription" type="system" pointSize="14"/>
                                 </buttonConfiguration>
                                 <connections>
-                                    <segue destination="BQg-Cm-isY" kind="show" identifier="toForgotPassword" id="j6U-5h-KTh"/>
+                                    <action selector="forgotPassPressed:" destination="aSe-bq-DPe" eventType="touchUpInside" id="hof-H3-z8d"/>
+                                    <segue destination="BQg-Cm-isY" kind="show" identifier="toForgotPassword" id="epu-q5-uCB"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -640,7 +641,7 @@
         <!--ForgotPasswordVC-->
         <scene sceneID="i3K-aR-wBI">
             <objects>
-                <viewController title="ForgotPasswordVC" id="BQg-Cm-isY" customClass="LoginViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="ForgotPasswordVC" id="BQg-Cm-isY" customClass="ForgotPasswordViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hhb-CR-LSu">
                         <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -698,7 +699,8 @@
                                     <action selector="loginButton:" destination="zv6-pA-ss7" eventType="touchUpInside" id="4Be-rz-yRo"/>
                                     <action selector="loginButton:" destination="jom-XK-ial" eventType="touchUpInside" id="qp0-Bd-xhJ"/>
                                     <action selector="loginButtonPressed:" destination="BQg-Cm-isY" eventType="touchUpInside" id="DB2-gw-hkQ"/>
-                                    <segue destination="5Rr-mR-ymG" kind="show" id="n20-Te-MeV"/>
+                                    <action selector="sendCodeTapped:" destination="BQg-Cm-isY" eventType="touchUpInside" id="CD9-10-rjv"/>
+                                    <segue destination="5Rr-mR-ymG" kind="show" identifier="goToVerification" id="n20-Te-MeV"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -716,6 +718,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="qVm-Dq-Gum"/>
                     <connections>
+                        <outlet property="emailField" destination="lbZ-rx-lmC" id="vQw-FW-1KT"/>
                         <outlet property="emailText" destination="lbZ-rx-lmC" id="bB8-xe-FgP"/>
                         <outlet property="errorMessage" destination="lFm-ad-RbO" id="GeA-1R-5nj"/>
                         <outlet property="loginButton" destination="Dj0-kf-KCJ" id="n9I-Zd-Oqk"/>
@@ -1020,7 +1023,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="m6K-15-28N" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4317.2727272727279" y="-759.41422594142261"/>
+            <point key="canvasLocation" x="4346" y="-759"/>
         </scene>
         <!--Create Task-->
         <scene sceneID="oaW-7x-JzP">
@@ -1503,7 +1506,7 @@
         <!--EnterCodeVC-->
         <scene sceneID="F1S-pf-qKm">
             <objects>
-                <viewController title="EnterCodeVC" id="5Rr-mR-ymG" customClass="LoginViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="EnterCodeVC" id="5Rr-mR-ymG" customClass="EnterCodeViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="6Cg-Vl-xBy">
                         <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1561,7 +1564,7 @@
                                     <action selector="loginButton:" destination="370-gN-sD7" eventType="touchUpInside" id="3vG-sk-z3R"/>
                                     <action selector="loginButton:" destination="jom-XK-ial" eventType="touchUpInside" id="u7i-u1-pac"/>
                                     <action selector="loginButtonPressed:" destination="5Rr-mR-ymG" eventType="touchUpInside" id="oFH-xw-1oz"/>
-                                    <segue destination="LCF-vc-YDN" kind="show" id="kjh-az-C75"/>
+                                    <segue destination="LCF-vc-YDN" kind="show" identifier="toCreateNewPass" id="kjh-az-C75"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1592,7 +1595,7 @@
         <!--CreateNewPassVC-->
         <scene sceneID="cgV-xS-38S">
             <objects>
-                <viewController title="CreateNewPassVC" id="LCF-vc-YDN" customClass="LoginViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="CreateNewPassVC" id="LCF-vc-YDN" customClass="CreateNewPassViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hej-h9-3hy">
                         <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1640,7 +1643,7 @@
                                     <action selector="loginButton:" destination="YnV-fj-ulC" eventType="touchUpInside" id="0vk-Ig-81i"/>
                                     <action selector="loginButton:" destination="jom-XK-ial" eventType="touchUpInside" id="51M-nM-zzc"/>
                                     <action selector="loginButtonPressed:" destination="LCF-vc-YDN" eventType="touchUpInside" id="l3O-iA-wAL"/>
-                                    <segue destination="RJu-jk-TdN" kind="show" id="bT2-6u-Pcw"/>
+                                    <segue destination="RJu-jk-TdN" kind="show" identifier="toPassChanged" id="bT2-6u-Pcw"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Create New Password" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tkf-QP-741">
@@ -1692,10 +1695,10 @@
             </objects>
             <point key="canvasLocation" x="6665" y="-759"/>
         </scene>
-        <!--PasswordChangeVC-->
+        <!--PasswordChangedVC-->
         <scene sceneID="mg7-cc-yhC">
             <objects>
-                <viewController title="PasswordChangeVC" id="RJu-jk-TdN" customClass="LoginViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="PasswordChangedVC" id="RJu-jk-TdN" customClass="PasswordChangedViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="SOm-dJ-f2I">
                         <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1766,7 +1769,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="6UW-eT-e3H"/>
-        <segue reference="iVk-Vo-z19"/>
+        <segue reference="HP5-HX-YFw"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="labelColor"/>
     <resources>
