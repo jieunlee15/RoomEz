@@ -1,6 +1,9 @@
+//
 //  CreateNewPassViewController.swift
 //  RoomEz
+//
 //  Created by Ananya Singh on 11/11/25.
+//
 
 import UIKit
 import FirebaseAuth
@@ -9,65 +12,69 @@ class CreateNewPassViewController: UIViewController {
 
     @IBOutlet weak var confirmPassword: UITextField!
     @IBOutlet weak var newPassword: UITextField!
-
-    var userEmail: String?        // ← passed from EnterCodeVC
-    var tempPassword: String?     // optional if you create a temp sign-in flow
+    @IBOutlet weak var errorLabel: UILabel!
+    
+    var userEmail: String?   // Passed from EnterCodeVC
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        errorLabel.text = ""
+        errorLabel.textColor = .systemRed
     }
 
     @IBAction func resetPassPressed(_ sender: Any) {
-        guard let email = userEmail else { return }
+        // clear old message
+        errorLabel.text = ""
+
+        guard let email = userEmail else {
+            showInlineError("Missing email information.")
+            return
+        }
         guard let newPass = newPassword.text, !newPass.isEmpty,
               let confirmPass = confirmPassword.text, !confirmPass.isEmpty else {
-            showAlert("Missing Info", "Please fill out both password fields.")
+            showInlineError("Please fill out both password fields.")
             return
         }
-
         guard newPass == confirmPass else {
-            showAlert("Passwords Don’t Match", "Please re-enter matching passwords.")
+            showInlineError("Passwords don’t match. Please try again.")
+            return
+        }
+        guard newPass.count >= 6 else {
+            showInlineError("Password must be at least 6 characters long.")
             return
         }
 
-        // Option A: if user is still signed in (rare in reset flow)
+        // Only continue if user is signed in — no segue unless true success
         if let user = Auth.auth().currentUser {
             user.updatePassword(to: newPass) { error in
                 if let error = error {
-                    self.showAlert("Error", error.localizedDescription)
+                    self.showInlineError(error.localizedDescription)
                 } else {
-                    self.showAlert("Success", "Password updated!") {
-                        self.performSegue(withIdentifier: "toPassChange", sender: self)
-                    }
+                    self.showSuccessAndSegue()
                 }
             }
-            return
-        }
-
-        // Option B: sign in temporarily, update password, sign out
-        Auth.auth().signIn(withEmail: email, password: newPass) { result, error in
-            if let error = error {
-                self.showAlert("Error", error.localizedDescription)
-                return
-            }
-
-            result?.user.updatePassword(to: newPass) { err in
-                if let err = err {
-                    self.showAlert("Error", err.localizedDescription)
-                } else {
-                    self.showAlert("Success", "Password updated!") {
-                        try? Auth.auth().signOut()
-                        self.performSegue(withIdentifier: "toPassChange", sender: self)
-                    }
-                }
-            }
+        } else {
+            // User not signed in — show error and DO NOT segue
+            self.showInlineError("You must be signed in to update your password.")
         }
     }
 
-    // Simple alert helper
-    private func showAlert(_ title: String, _ msg: String, completion: (() -> Void)? = nil) {
-        let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completion?() })
-        present(alert, animated: true)
+    // MARK: - Helpers
+    private func showInlineError(_ message: String) {
+        DispatchQueue.main.async {
+            self.errorLabel.textColor = .systemRed
+            self.errorLabel.text = message
+        }
+    }
+
+    private func showSuccessAndSegue() {
+        DispatchQueue.main.async {
+            self.errorLabel.textColor = .systemGreen
+            self.errorLabel.text = "Password updated successfully!"
+            // Only segue after showing success
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.performSegue(withIdentifier: "toPassChange", sender: self)
+            }
+        }
     }
 }
