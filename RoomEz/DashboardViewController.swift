@@ -124,13 +124,12 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                 let cell = cell,
                 let tappedIndexPath = tableView.indexPath(for: cell)
             else { return }
-
+            
             let task = self.filteredTasks[tappedIndexPath.row]
-
-            // Update the task in the main tasks array
+            
             if let originalIndex = self.taskManager.tasks.firstIndex(where: { $0.id == task.id }) {
                 var updatedTask = task
-                // 🔁 Cycle through the three states
+                // Cycle through the three states
                 switch updatedTask.status {
                 case .todo:
                     updatedTask.status = .inProgress
@@ -140,22 +139,24 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                     updatedTask.status = .todo
                 }
                 self.taskManager.updateTask(updatedTask, at: originalIndex)
+                
+                // Show banner message based on the *new* status
+                switch updatedTask.status {
+                case .todo:
+                    self.showBanner(message: "Task started")
+                case .inProgress:
+                    self.showBanner(message: "Task marked in progress")
+                case .done:
+                    self.showBanner(message: "Task completed")
+                }
             }
+            
             tableView.reloadData()
             self.updateProgress()
-                    
-                    // Show banner message
-            switch task.status {
-            case .todo:
-                self.showBanner(message: "Task started 🚀")
-            case .inProgress:
-                self.showBanner(message: "Task marked in progress 🔧")
-            case .done:
-                self.showBanner(message: "Task completed 🎉")
-            }
         }
         return cell
     }
+
 
     private func formattedDate(_ date: Date?) -> String {
         guard let date = date else { return "" }
@@ -168,14 +169,9 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
            let destination = segue.destination as? TaskListViewController {
             // (nothing special yet)
         }
-        
-        if segue.identifier == "showAnnouncements",
-           let dest = segue.destination as? AnnouncementViewController {
-            // pull the saved code from UserDefaults
-            let code = UserDefaults.standard.string(forKey: "currentRoomCode")
-            dest.roomCode = code
+
         }
-    }
+    
 
     func showBanner(message: String) {
         let bannerHeight: CGFloat = 60

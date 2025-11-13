@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dZz-lZ-Mlb">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
@@ -165,7 +165,7 @@
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="xKQ-CU-ZtD">
                             <connections>
                                 <action selector="addAnnouncementTapped:" destination="YTW-tH-mOB" id="uiA-wb-tA0"/>
-                                <segue destination="Ce6-6M-7EX" kind="show" identifier="showNewAnnouncement" id="QPI-Mf-hfc"/>
+                                <segue destination="Ce6-6M-7EX" kind="show" identifier="showNewAnnouncement" id="YIl-da-NWg"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -265,6 +265,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="4L4-Ve-XCn"/>
+                    <connections>
+                        <segue destination="YTW-tH-mOB" kind="show" identifier="showAnnouncements" id="KGz-IQ-9bf"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Sgh-8o-hlC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1945,6 +1948,7 @@
         <segue reference="y70-hL-FNe"/>
         <segue reference="xCr-AL-AVl"/>
         <segue reference="iVk-Vo-z19"/>
+        <segue reference="3Qc-aW-oic"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="labelColor"/>
     <resources>

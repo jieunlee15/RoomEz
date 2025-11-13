@@ -20,15 +20,15 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     var announcements: [Announcement] = []
         
         // This should be set by the previous screen (room code user joined)
-        var roomCode: String?
         
         private let db = Firestore.firestore()
         private var listener: ListenerRegistration?
         private var hasLoadedOnce = false
         private var notificationsEnabled = true
+        private var lastAnnouncementCount = 0
+
         
         // Lifetime for an announcement before it is archived (in days)
-        private let noteLifetimeDays = 7
         
         override func viewDidLoad() {
             super.viewDidLoad()
@@ -57,81 +57,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                 }
             }
         }
-        
-        // MARK: - Firestore listener
-        
-        private func startListeningForAnnouncements() {
-            guard let roomCode = roomCode else {
-                print("roomCode not set on AnnouncementViewController")
-                return
-            }
-            
-            let announcementsRef = db.collection("roommateGroups")
-                .document(roomCode)
-                .collection("announcements")
-            
-            listener = announcementsRef
-                .whereField("isArchived", isEqualTo: false)
-                .order(by: "createdAt", descending: true)
-                .addSnapshotListener { [weak self] snapshot, error in
-                    guard let self = self else { return }
-                    if let error = error {
-                        print("Error listening for announcements: \(error.localizedDescription)")
-                        return
-                    }
-                    
-                    guard let snapshot = snapshot else { return }
-                    
-                    let now = Date()
-                    var updatedAnnouncements: [Announcement] = []
-                    var docsToArchive: [DocumentReference] = []
-                    
-                    for doc in snapshot.documents {
-                        let data = doc.data()
-                        
-                        let title = data["title"] as? String ?? ""
-                        let content = data["content"] as? String ?? ""
-                        let authorName = data["authorName"] as? String ?? "User"
-                        let isAnonymous = data["isAnonymous"] as? Bool ?? false
-                        let createdAt = (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
-                        let expiresAt = (data["expiresAt"] as? Timestamp)?.dateValue()
-                        
-                        // If expired, schedule it to be archived and skip it for the list
-                        if let expiresAt = expiresAt, expiresAt <= now {
-                            docsToArchive.append(doc.reference)
-                            continue
-                        }
-                        
-                        let announcement = Announcement(
-                            title: title,
-                            content: content,
-                            author: authorName,
-                            isAnonymous: isAnonymous,
-                            date: createdAt
-                        )
-                        updatedAnnouncements.append(announcement)
-                    }
-                    
-                    self.announcements = updatedAnnouncements
-                    self.tableView.reloadData()
-                    
-                    // Mark expired notes as archived
-                    for ref in docsToArchive {
-                        ref.updateData(["isArchived": true])
-                    }
-                    
-                    // Show banner only for new additions after the first load
-                    if self.hasLoadedOnce {
-                        let newChanges = snapshot.documentChanges.filter { $0.type == .added }
-                        if !newChanges.isEmpty && self.notificationsEnabled {
-                            self.showNewAnnouncementBanner()
-                        }
-                    } else {
-                        self.hasLoadedOnce = true
-                    }
-                }
-        }
-        
+                
         // MARK: - Add new announcement
     
     @IBAction func addAnnouncementTapped(_ sender: UIBarButtonItem) {
@@ -146,42 +72,13 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         }
         
         // Delegate called when user taps Submit in the NewAnnouncement screen
-        func didPostAnnouncement(_ announcement: Announcement) {
-            // Save to Firestore; the listener will handle updating the array and UI
-            guard let roomCode = roomCode else {
-                print("roomCode missing when posting announcement")
-                return
-            }
-            guard let currentUser = Auth.auth().currentUser else { return }
-            
-            let roomRef = db.collection("roommateGroups").document(roomCode)
-            let announcementsRef = roomRef.collection("announcements")
-            
-            let now = Date()
-            let expiresAt = Calendar.current.date(byAdding: .day,
-                                                  value: noteLifetimeDays,
-                                                  to: now) ?? now
-            
-            let data: [String: Any] = [
-                "title": announcement.title,
-                "content": announcement.content,
-                "authorName": announcement.author,
-                "authorId": currentUser.uid,
-                "isAnonymous": announcement.isAnonymous,
-                "createdAt": Timestamp(date: now),
-                "expiresAt": Timestamp(date: expiresAt),
-                "isArchived": false
-            ]
-            
-            announcementsRef.addDocument(data: data) { error in
-                if let error = error {
-                    print("Error saving announcement: \(error.localizedDescription)")
-                } else {
-                    // For the user who posted, you already see the note in the list
-                    // The banner for others will trigger from the snapshot listener
-                }
-            }
-        }
+    // Delegate called when user taps Submit in the NewAnnouncement screen
+    func didPostAnnouncement(_ announcement: Announcement) {
+        // Firestore listener will refresh the table.
+        // Just show a banner immediately for the user who posted.
+        showNewAnnouncementBanner()
+    }
+
         
         // MARK: - Table view
         
@@ -279,4 +176,99 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                 banner.removeFromSuperview()
             })
         }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startListeningForAnnouncements()
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        listener?.remove()
+    }
+    
+    // MARK: - Firestore realtime listener
+    
+    private func startListeningForAnnouncements() {
+        guard let roomCode = UserDefaults.standard.string(forKey: "currentRoomCode") else {
+            announcements = []
+            tableView.reloadData()
+            return
+        }
+        
+        let collection = db.collection("roommateGroups")
+            .document(roomCode)
+            .collection("announcements")
+        
+        // remove old listener if any
+        listener?.remove()
+        
+        listener = collection
+            .order(by: "createdAt", descending: true)
+            .addSnapshotListener { [weak self] snapshot, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    print("Error listening for announcements: \(error)")
+                    return
+                }
+                
+                guard let docs = snapshot?.documents else { return }
+                
+                let now = Date()
+                var freshAnnouncements: [Announcement] = []
+                var expiredIDs: [String] = []
+                
+                for doc in docs {
+                    let data = doc.data()
+                    
+                    // skip archived
+                    let isArchived = data["isArchived"] as? Bool ?? false
+                    if isArchived { continue }
+                    
+                    // skip & mark expired
+                    if let expiresTS = data["expiresAt"] as? Timestamp {
+                        let expDate = expiresTS.dateValue()
+                        if expDate < now {
+                            expiredIDs.append(doc.documentID)
+                            continue
+                        }
+                    }
+                    
+                    let title = data["title"] as? String ?? ""
+                    let content = data["content"] as? String ?? ""
+                    let author = data["author"] as? String ?? "Roommate"
+                    let isAnon = data["isAnonymous"] as? Bool ?? false
+                    let createdAt = (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+                    
+                    let announcement = Announcement(
+                        title: title,
+                        content: content,
+                        author: author,
+                        isAnonymous: isAnon,
+                        date: createdAt
+                    )
+                    freshAnnouncements.append(announcement)
+                }
+                
+                self.announcements = freshAnnouncements
+                self.tableView.reloadData()
+                
+                // archive expired docs in background
+                for id in expiredIDs {
+                    collection.document(id).updateData(["isArchived": true])
+                }
+                
+                // Show banner if new notes arrived after first load
+                if self.hasLoadedOnce,
+                   freshAnnouncements.count > self.lastAnnouncementCount {
+                    self.showNewAnnouncementBanner()
+                }
+                
+                self.hasLoadedOnce = true
+                self.lastAnnouncementCount = freshAnnouncements.count
+            }
+    }
+
+
+}
