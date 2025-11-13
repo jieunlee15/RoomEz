@@ -1834,7 +1834,6 @@
                                 <connections>
                                     <action selector="loginButton:" destination="YnV-fj-ulC" eventType="touchUpInside" id="0vk-Ig-81i"/>
                                     <action selector="loginButton:" destination="jom-XK-ial" eventType="touchUpInside" id="51M-nM-zzc"/>
-                                    <action selector="loginButtonPressed:" destination="LCF-vc-YDN" eventType="touchUpInside" id="l3O-iA-wAL"/>
                                     <action selector="resetPassPressed:" destination="LCF-vc-YDN" eventType="touchUpInside" id="EYO-WE-SGn"/>
                                     <action selector="resetPassPressed:" destination="YnV-fj-ulC" eventType="touchUpInside" id="ZRt-lb-ebG"/>
                                     <segue destination="RJu-jk-TdN" kind="show" identifier="toPassChange" id="bT2-6u-Pcw"/>
@@ -1870,9 +1869,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="E4T-Qp-ly9"/>
                     <connections>
-                        <outlet property="emailText" destination="cDz-vE-JOT" id="fg8-X1-3W5"/>
-                        <outlet property="errorMessage" destination="3DC-Vc-vsG" id="3zT-HU-Pdb"/>
-                        <outlet property="loginButton" destination="ce7-ZW-26n" id="VY3-U3-E0D"/>
+                        <outlet property="confirmPassword" destination="icf-m2-0GP" id="fHU-bd-N7a"/>
+                        <outlet property="newPassword" destination="cDz-vE-JOT" id="9eb-I7-Vtq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ixw-1F-5eU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1917,7 +1915,6 @@
                                     <action selector="backToLoginPressed:" destination="RJu-jk-TdN" eventType="touchUpInside" id="I2t-Mo-t8X"/>
                                     <action selector="loginButton:" destination="jom-XK-ial" eventType="touchUpInside" id="PU1-2G-XQi"/>
                                     <action selector="loginButton:" destination="yZP-pG-J2D" eventType="touchUpInside" id="V65-Hh-NZu"/>
-                                    <action selector="loginButtonPressed:" destination="RJu-jk-TdN" eventType="touchUpInside" id="DMY-xQ-Kj6"/>
                                     <segue destination="aSe-bq-DPe" kind="show" identifier="backToLogin" id="y70-hL-FNe"/>
                                 </connections>
                             </button>
@@ -1944,6 +1941,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
+        <segue reference="bT2-6u-Pcw"/>
         <segue reference="BWi-Vw-wG0"/>
         <segue reference="y70-hL-FNe"/>
         <segue reference="xCr-AL-AVl"/>
