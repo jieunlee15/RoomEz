@@ -40,7 +40,6 @@ class LoginViewController: UIViewController {
                 self.errorMessage.text = ""
                 
                 // Move to the next screen (e.g. home screen)
-                // Assuming you have a segue in your storyboard with identifier "goToHome"
                 self.performSegue(withIdentifier: "toMessageLog", sender: self)
             }
         }

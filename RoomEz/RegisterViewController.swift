@@ -14,9 +14,6 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var registerButton: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
-        registerButton.backgroundColor = .black
-        registerButton.setTitleColor(.white, for: .normal)
-        registerButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
         registerButton.layer.cornerRadius = 10
         registerButton.clipsToBounds = true
         
