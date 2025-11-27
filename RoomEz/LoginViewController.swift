@@ -13,9 +13,6 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var loginButton: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
-        loginButton.backgroundColor = .black
-        loginButton.setTitleColor(.white, for: .normal)
-        loginButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
         loginButton.layer.cornerRadius = 10
         loginButton.clipsToBounds = true
         
@@ -27,9 +24,6 @@ class LoginViewController: UIViewController {
         
     }
     
-    @IBAction func forgotPassPressed(_ sender: Any) {
-        performSegue(withIdentifier: "toForgotPassword", sender: self)
-    }
     
     @IBAction func loginButtonPressed(_ sender: Any) {
         guard let email = emailText.text, !email.isEmpty,

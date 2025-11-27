@@ -18,8 +18,8 @@ class CreateNewPassViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        errorLabel.text = ""
-        errorLabel.textColor = .systemRed
+        //errorLabel.text = ""
+        //errorLabel.textColor = .systemRed
     }
 
     @IBAction func resetPassPressed(_ sender: Any) {
