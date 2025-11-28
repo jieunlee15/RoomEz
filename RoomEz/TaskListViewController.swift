@@ -55,7 +55,6 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             }
         }
     }
-
     
     func generateDates() {
         let today = Date()

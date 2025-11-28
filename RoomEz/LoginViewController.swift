@@ -44,4 +44,11 @@ class LoginViewController: UIViewController {
             }
         }
     }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "toMessageLog" {
+            if let tabBar = segue.destination as? UITabBarController {
+                tabBar.selectedIndex = 2  // 👈 This selects the second tab
+            }
+        }
+    }
 }

@@ -306,8 +306,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
                 
                 // 2. Instantiate and present the Login View Controller (assuming its Storyboard ID is "LoginViewController")
                 if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
-                    loginVC.modalPresentationStyle = .fullScreen
-                    present(loginVC, animated: true)
+                    navigationController?.setViewControllers([loginVC], animated: true)
                 }
             } catch {
                 print("Error signing out: \(error.localizedDescription)")

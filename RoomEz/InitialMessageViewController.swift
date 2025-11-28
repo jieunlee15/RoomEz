@@ -6,13 +6,6 @@ import UIKit
 
 class InitialMessageViewController: UIViewController {
 
-    @IBAction func joinRoomTapped(_sender: UIButton) {
-        performSegue(withIdentifier: "joinGroup", sender: self)
-    }
-
-    @IBAction func createRoomTapped(_sender: UIButton) {
-        performSegue(withIdentifier: "showAnnouncements", sender: self)
-    }
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -20,8 +13,8 @@ class InitialMessageViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if UserDefaults.standard.string(forKey: "currentRoomCode") != nil {
+        /*if UserDefaults.standard.string(forKey: "currentRoomCode") != nil {
             performSegue(withIdentifier: "showAnnouncements", sender: self)
-        }
+        }*/
     }
 }

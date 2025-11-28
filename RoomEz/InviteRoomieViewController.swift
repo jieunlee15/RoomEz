@@ -15,9 +15,12 @@ class InviteRoomieViewController: UIViewController {
         super.viewDidLoad()
         let newCode = generateRandomCode()
         generatedCodeLabel.text = newCode
-        
+
         // Save this new room code to Firestore
         createRoomInFirestore(code: newCode)
+
+        // ✅ Save locally so Messages tab knows user is in this room
+        UserDefaults.standard.set(newCode, forKey: "currentRoomCode")
     }
 
     func generateRandomCode(length: Int = 4) -> String {

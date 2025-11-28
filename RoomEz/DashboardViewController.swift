@@ -13,6 +13,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var progressContainer: UIView!
     
+    @IBOutlet weak var detailButton: UIButton!
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
     
@@ -47,6 +48,16 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         updateProgress()
         tableView.reloadData()
     }
+    @IBAction func detailPressed(_ sender: Any) {
+        self.performSegue(withIdentifier: "toTaskTabBar", sender: self)
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "toTaskTabBar" {
+            let tabBar = segue.destination as! UITabBarController
+            tabBar.selectedIndex = 1  // 0 = first tab, change as needed
+        }
+    }
+
     
 
 // MARK: - Circular Progress Setup
@@ -164,13 +175,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         formatter.dateStyle = .short
         return formatter.string(from: date)
     }
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showTaskList",
-           let destination = segue.destination as? TaskListViewController {
-            // (nothing special yet)
-        }
-
-        }
     
 
     func showBanner(message: String) {

@@ -47,7 +47,7 @@ class RegisterViewController: UIViewController {
             } else {
                 self.errorMessage.text = ""
                 // Navigate to next screen (or dismiss)
-                self.performSegue(withIdentifier: "toMessage", sender: self)
+                self.navigationController?.popViewController(animated: true)
             }
         }
     }
