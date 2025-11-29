@@ -4,6 +4,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseFirestore
 
 class RegisterViewController: UIViewController {
     
@@ -46,7 +47,22 @@ class RegisterViewController: UIViewController {
                 self.errorMessage.text = error.localizedDescription
             } else {
                 self.errorMessage.text = ""
-                // Navigate to next screen (or dismiss)
+                // Save user to Firestore database
+                let db = Firestore.firestore()
+                if let uid = authResult?.user.uid {
+                    db.collection("users").document(uid).setData([
+                        "email": email,
+                        "createdAt": Timestamp()
+                    ]) { error in
+                        if let error = error {
+                            print("Error saving user: \(error.localizedDescription)")
+                        } else {
+                            print("User successfully saved to Firestore!")
+                        }
+                    }
+                }
+
+                // Navigate after saving
                 self.navigationController?.popViewController(animated: true)
             }
         }

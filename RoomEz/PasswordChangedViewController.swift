@@ -13,7 +13,9 @@ class PasswordChangedViewController: UIViewController {
     }
     
     @IBAction func backToLoginPressed(_ sender: Any) {
-        performSegue(withIdentifier: "backToLogin", sender: self)
+        if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
+            navigationController?.setViewControllers([loginVC], animated: true)
+        }
     }
     
     /*
