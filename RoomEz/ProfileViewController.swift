@@ -19,8 +19,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     let rows = ["Edit Profile", "Password", "Notification", "Anonymous"]
     var notificationOn = true
     var anonymousOn = false
-    
-    // Firestore reference
     let db = Firestore.firestore()
     
     override func viewDidLoad() {
@@ -30,7 +28,9 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         loadSettingsFromFirestore()
         tableView.delegate = self
         tableView.dataSource = self
-        editPhotoButton.addTarget(self, action: #selector(onEditPhotoTapped), for: .touchUpInside)
+        tableView.rowHeight = 44
+        tableView.tableFooterView = UIView()
+        tableView.separatorInset = .zero
     }
     
     // MARK: - Layout Fix: Circular Image Timing
@@ -38,29 +38,52 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     // Calculate corner radius AFTER Auto Layout has set the final frame (needed for circular image)
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        let topBlackView = UIView()
+        topBlackView.backgroundColor = UIColor(
+            red: 24/255,
+            green: 24/255,
+            blue: 24/255,
+            alpha: 1
+        )
+        topBlackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(topBlackView)
+        view.sendSubviewToBack(topBlackView) // ensures profile image is on top
+
+        NSLayoutConstraint.activate([
+            topBlackView.topAnchor.constraint(equalTo: view.topAnchor),
+            topBlackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            topBlackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            topBlackView.bottomAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: -23)
+        ])
         profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
+        profileImageView.clipsToBounds = true
+        
+        editPhotoButton.tintColor = .white
+        editPhotoButton.layer.shadowOpacity = 0.2
+        editPhotoButton.layer.shadowRadius = 4
+        editPhotoButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+
     }
-    
     private func setupUI() {
-        view.backgroundColor = .systemGroupedBackground
+        //view.backgroundColor = .white
         
         profileImageView.image = UIImage(systemName: "person.circle.fill")
         profileImageView.tintColor = .gray
-        // NOTE: Corner radius is now set in viewDidLayoutSubviews()
-        profileImageView.clipsToBounds = true
         profileImageView.contentMode = .scaleAspectFill
         
-        nameLabel.font = UIFont.boldSystemFont(ofSize: 22)
+        nameLabel.font = UIFont.boldSystemFont(ofSize: 24) // ⭐ Updated to match mockup
         nameLabel.textAlignment = .center
         
         emailLabel.font = UIFont.systemFont(ofSize: 16)
         emailLabel.textColor = .secondaryLabel
         emailLabel.textAlignment = .center
-        
-        logoutButton.layer.cornerRadius = 12
-        // NOTE: Removed redundant setTitle to fix duplicate "Log Out" text
-        logoutButton.backgroundColor = .white
-        logoutButton.setTitleColor(.black, for: .normal)
+
+        logoutButton.setTitle("Log out", for: .normal)
+        logoutButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
+        logoutButton.layer.borderWidth = 1
+        logoutButton.layer.borderColor = UIColor.black.cgColor
+        logoutButton.layer.cornerRadius = 10
+        logoutButton.clipsToBounds = true
     }
     
     // MARK: - Load Auth & Firestore Data
@@ -68,17 +91,37 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         guard let user = Auth.auth().currentUser else {
             nameLabel.text = "Guest"
             emailLabel.text = ""
+            profileImageView.image = UIImage(systemName: "person.circle.fill")
+            profileImageView.tintColor = .gray
             return
         }
+        
         nameLabel.text = user.displayName ?? "User"
         emailLabel.text = user.email
         
-        if let photoURL = user.photoURL {
-            DispatchQueue.global().async {
-                if let data = try? Data(contentsOf: photoURL), let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        self.profileImageView.image = image
+        // Load profile photo from Firestore first
+        let uid = user.uid
+        db.collection("users").document(uid).getDocument { snapshot, error in
+            if let data = snapshot?.data(), let photoURLString = data["photoURL"] as? String, let url = URL(string: photoURLString) {
+                DispatchQueue.global().async {
+                    if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.profileImageView.image = image
+                        }
                     }
+                }
+            } else if let photoURL = user.photoURL { // fallback to Auth photoURL
+                DispatchQueue.global().async {
+                    if let data = try? Data(contentsOf: photoURL), let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.profileImageView.image = image
+                        }
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.profileImageView.image = UIImage(systemName: "person.circle.fill")
+                    self.profileImageView.tintColor = .gray
                 }
             }
         }
@@ -96,7 +139,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: - UITableView Data Source
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         rows.count
     }
@@ -104,6 +146,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let rowTitle = rows[indexPath.row]
         let cellIdentifier: String
+        
         switch rowTitle {
         case "Edit Profile":       cellIdentifier = "profileCell"
         case "Password":           cellIdentifier = "passwordCell"
@@ -111,30 +154,33 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         case "Anonymous":          cellIdentifier = "anonymousCell"
         default:                   cellIdentifier = "OptionCell"
         }
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
-        
-        cell.textLabel?.text = rowTitle
-        
-        
 
-        
-        if rowTitle == "Notification" {
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+
+        cell.textLabel?.text = rowTitle
+        cell.textLabel?.font = UIFont(name: "SFProText-Medium", size: 16) ?? UIFont.systemFont(ofSize: 16, weight: .medium)
+
+        if rowTitle == "Notification" || rowTitle == "Anonymous" {
             let toggleSwitch = UISwitch()
-            toggleSwitch.isOn = notificationOn
+            toggleSwitch.isOn = (rowTitle == "Notification") ? notificationOn : anonymousOn
             toggleSwitch.tag = indexPath.row
             toggleSwitch.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
-            cell.accessoryView = toggleSwitch
+            
+            // ⭐ Switch size tweak (24x24)
+            toggleSwitch.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+
+            // ⭐ Use accessory view container to force alignment to edge
+            let container = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
+
+            container.addSubview(toggleSwitch)
+            toggleSwitch.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                toggleSwitch.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+                toggleSwitch.centerXAnchor.constraint(equalTo: container.centerXAnchor)
+            ])
+            cell.accessoryView = container
             cell.selectionStyle = .none
-            cell.accessoryType = .none // Prevents dual accessories
-        } else if rowTitle == "Anonymous" {
-            let toggleSwitch = UISwitch()
-            toggleSwitch.isOn = anonymousOn
-            toggleSwitch.tag = indexPath.row
-            toggleSwitch.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
-            cell.accessoryView = toggleSwitch
-            cell.selectionStyle = .none
-            cell.accessoryType = .none // Prevents dual accessories
+            cell.accessoryType = .none
         } else {
             cell.accessoryView = nil
             cell.accessoryType = .disclosureIndicator
@@ -199,17 +245,10 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - Update Firebase Data
     
     func updateFirebaseDisplayName(_ newName: String) {
-        if let user = Auth.auth().currentUser {
-            let changeRequest = user.createProfileChangeRequest()
-            changeRequest.displayName = newName
-            changeRequest.commitChanges { error in
-                if let error = error {
-                    print("Error updating name: \(error.localizedDescription)")
-                } else {
-                    print("Display name updated successfully")
-                }
-            }
-        }
+        guard let user = Auth.auth().currentUser else { return }
+        let changeRequest = user.createProfileChangeRequest()
+        changeRequest.displayName = newName
+        changeRequest.commitChanges { _ in }
     }
     
     func updateFirebasePassword(_ newPassword: String) {
@@ -233,7 +272,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - Edit Photo (Upload to Firebase Storage)
     
     // FIX: Added @objc for the #selector in viewDidLoad()
-    @objc func onEditPhotoTapped() {
+    
+    @IBAction func editPhotoButtonPressed(_ sender: UIButton) {
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.allowsEditing = true
@@ -252,15 +292,19 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-    
+
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        picker.dismiss(animated: true)
-        let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage
-        if let image = selectedImage {
-            profileImageView.image = image
-            uploadProfilePhotoToFirebase(image)
+            picker.dismiss(animated: true)
+            guard let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage else { return }
+
+            // Update UI immediately
+            DispatchQueue.main.async {
+                self.profileImageView.image = selectedImage
+            }
+
+            // Upload to Firebase
+            uploadProfilePhotoToFirebase(selectedImage)
         }
-    }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
@@ -269,27 +313,17 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     func uploadProfilePhotoToFirebase(_ image: UIImage) {
         guard let imageData = image.jpegData(compressionQuality: 0.8),
               let user = Auth.auth().currentUser else { return }
+
         let storageRef = Storage.storage().reference().child("profilePhotos/\(user.uid).jpg")
-        storageRef.putData(imageData, metadata: nil) { metadata, error in
-            guard error == nil else {
-                print("Upload failed: \(error!.localizedDescription)")
-                return
-            }
-            storageRef.downloadURL { url, error in
-                guard let downloadURL = url else {
-                    print("No download URL: \(error!.localizedDescription)")
-                    return
-                }
+        storageRef.putData(imageData, metadata: nil) { _, error in
+            guard error == nil else { return }
+            
+            storageRef.downloadURL { url, _ in
+                guard let downloadURL = url else { return }
                 let changeRequest = user.createProfileChangeRequest()
                 changeRequest.photoURL = downloadURL
-                changeRequest.commitChanges { error in
-                    if let error = error {
-                        print("Failed updating profile photo URL: \(error.localizedDescription)")
-                    } else {
-                        print("Profile photo URL updated.")
-                        // Save photoURL in Firestore
-                        self.saveProfileDataToFirestore(photoURL: downloadURL.absoluteString)
-                    }
+                changeRequest.commitChanges { _ in
+                    self.saveProfileDataToFirestore(photoURL: downloadURL.absoluteString)
                 }
             }
         }
@@ -303,8 +337,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             do {
                 // 1. Sign out the current user from Firebase Auth
                 try Auth.auth().signOut()
-                
-                // 2. Instantiate and present the Login View Controller (assuming its Storyboard ID is "LoginViewController")
                 if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
                     navigationController?.setViewControllers([loginVC], animated: true)
                 }
