@@ -331,10 +331,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
-    
 
         // MARK: - Log Out
-
         // NOTE: This @IBAction must be present for the Storyboard connection to work.
         @IBAction func logoutPressed(_ sender: UIButton) {
             do {
