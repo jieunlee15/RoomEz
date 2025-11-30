@@ -65,8 +65,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     }
     private func setupUI() {
-        //view.backgroundColor = .white
-        
         profileImageView.image = UIImage(systemName: "person.circle.fill")
         profileImageView.tintColor = .gray
         profileImageView.contentMode = .scaleAspectFill
@@ -277,19 +275,24 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.allowsEditing = true
-        
-        let alert = UIAlertController(title: "Select Photo", message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
+
+        // Use .alert to make it centered
+        let alert = UIAlertController(title: "Select Photo", message: nil, preferredStyle: .alert)
+
+        alert.addAction(UIAlertAction(title: "Take Photo", style: .default, handler: { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 picker.sourceType = .camera
                 self.present(picker, animated: true)
             }
         }))
-        alert.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { _ in
+
+        alert.addAction(UIAlertAction(title: "Choose from Album", style: .default, handler: { _ in
             picker.sourceType = .photoLibrary
             self.present(picker, animated: true)
         }))
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
         present(alert, animated: true)
     }
 
