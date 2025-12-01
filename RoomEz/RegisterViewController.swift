@@ -8,6 +8,9 @@ import FirebaseFirestore
 
 class RegisterViewController: UIViewController {
     
+    
+    @IBOutlet weak var firstName: UITextField!
+    @IBOutlet weak var lastName: UITextField!
     @IBOutlet weak var errorMessage: UILabel!
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
