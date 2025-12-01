@@ -8,7 +8,6 @@ import FirebaseFirestore
 
 class RegisterViewController: UIViewController {
     
-    
     @IBOutlet weak var firstName: UITextField!
     @IBOutlet weak var lastName: UITextField!
     @IBOutlet weak var errorMessage: UILabel!
@@ -16,58 +15,67 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var passwordText: UITextField!
     @IBOutlet weak var confirmPasswordText: UITextField!
     @IBOutlet weak var registerButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         registerButton.layer.cornerRadius = 10
         registerButton.clipsToBounds = true
         
         errorMessage.textColor = .systemRed
         errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
-        
-        //passwordText.isSecureTextEntry = true
-        //confirmPasswordText.isSecureTextEntry = true
-        // Do any additional setup after loading the view.
     }
     
     @IBAction func registerButtonPressed(_ sender: Any) {
-        guard let email = emailText.text, !email.isEmpty,
+        
+        // Validate all fields
+        guard let fName = firstName.text, !fName.isEmpty,
+              let lName = lastName.text, !lName.isEmpty,
+              let email = emailText.text, !email.isEmpty,
               let password = passwordText.text, !password.isEmpty,
               let confirmPassword = confirmPasswordText.text, !confirmPassword.isEmpty else {
             errorMessage.text = "Please fill in all fields."
             return
         }
+        
         guard password == confirmPassword else {
             errorMessage.text = "Passwords do not match."
             return
         }
         
-        // Step 2: Create the user in Firebase
+        // Create user with Firebase Auth
         Auth.auth().createUser(withEmail: email, password: password) { [weak self]
             authResult, error in
+            
             guard let self = self else { return }
-            if let error = error as NSError? {
+            
+            if let error = error {
                 self.errorMessage.text = error.localizedDescription
-            } else {
-                self.errorMessage.text = ""
-                // Save user to Firestore database
-                let db = Firestore.firestore()
-                if let uid = authResult?.user.uid {
-                    db.collection("users").document(uid).setData([
-                        "email": email,
-                        "createdAt": Timestamp()
-                    ]) { error in
-                        if let error = error {
-                            print("Error saving user: \(error.localizedDescription)")
-                        } else {
-                            print("User successfully saved to Firestore!")
-                        }
+                return
+            }
+            
+            self.errorMessage.text = ""
+            
+            // Save user info in Firestore
+            let db = Firestore.firestore()
+            if let uid = authResult?.user.uid {
+                db.collection("users").document(uid).setData([
+                    "firstName": fName,
+                    "lastName": lName,
+                    "email": email,
+                    "createdAt": Timestamp()
+                ]) { error in
+                    if let error = error {
+                        print("Error saving user: \(error.localizedDescription)")
+                    } else {
+                        print("User successfully saved to Firestore!")
                     }
                 }
-
-                // Navigate after saving
-                self.navigationController?.popViewController(animated: true)
             }
+            
+            // Return to login screen
+            self.navigationController?.popViewController(animated: true)
         }
     }
 }
