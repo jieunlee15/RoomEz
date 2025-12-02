@@ -16,10 +16,7 @@ class InviteRoomieViewController: UIViewController {
         let newCode = generateRandomCode()
         generatedCodeLabel.text = newCode
 
-        // Save this new room code to Firestore
         createRoomInFirestore(code: newCode)
-
-        // ✅ Save locally so Messages tab knows user is in this room
         UserDefaults.standard.set(newCode, forKey: "currentRoomCode")
     }
 
@@ -39,7 +36,6 @@ class InviteRoomieViewController: UIViewController {
         }
     }
 
-    // Creates a new room group in Firestore and adds current user to it
     func createRoomInFirestore(code: String) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 

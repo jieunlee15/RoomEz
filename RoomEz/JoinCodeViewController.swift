@@ -7,6 +7,7 @@ import FirebaseFirestore
 import FirebaseAuth
 
 class JoinCodeViewController: UIViewController {
+    
     @IBOutlet weak var codeTextField: UITextField!
     
     let db = Firestore.firestore()
@@ -45,7 +46,7 @@ class JoinCodeViewController: UIViewController {
                 return
             }
             
-            // Add user to members array (merge keeps existing members)
+            // Add user to members array
             roomRef.updateData([
                 "members": FieldValue.arrayUnion([currentUserID])
             ]) { error in
@@ -53,24 +54,27 @@ class JoinCodeViewController: UIViewController {
                     print("Error joining room: \(error)")
                     self.showAlert(title: "Error", message: "Could not join room. Please try again.")
                 } else {
-                    // Save the room code for later screens (Dashboard, Announcements, etc.)
+                    // Save room code
                     UserDefaults.standard.set(code, forKey: "currentRoomCode")
                     
-                    UIPasteboard.general.string = code
-                    print("Joined room \(code) successfully!")
-                    
-                    let alert = UIAlertController(title: "You're In!", message: "Entering room shortly...", preferredStyle: .alert)
-                    self.present(alert, animated: true) {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            alert.dismiss(animated: true) {
-                                self.performSegue(withIdentifier: "afterJoinPressed", sender: self)
-                            }
+                    // Switch Messages tab to MessagesVC immediately
+                    if let tabBar = self.tabBarController {
+                        let messagesTabIndex = 2 // your Messages tab index
+                        tabBar.selectedIndex = messagesTabIndex
+                        
+                        if let nav = tabBar.viewControllers?[messagesTabIndex] as? UINavigationController,
+                           let messagesVC = nav.viewControllers.first as? AnnouncementViewController {
+                            
+                            // Update the room code dynamically
+                            messagesVC.setRoomCode(code)
                         }
                     }
                 }
             }
         }
     }
+   
+
     func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))

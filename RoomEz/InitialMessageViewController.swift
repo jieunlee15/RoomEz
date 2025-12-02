@@ -16,5 +16,6 @@ class InitialMessageViewController: UIViewController {
         /*if UserDefaults.standard.string(forKey: "currentRoomCode") != nil {
             performSegue(withIdentifier: "showAnnouncements", sender: self)
         }*/
+        
     }
 }

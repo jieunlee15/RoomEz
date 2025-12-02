@@ -12,6 +12,8 @@ protocol NewAnnouncementDelegate: AnyObject {
 
 class NewAnnouncementViewController: UIViewController {
     
+    var roomCode: String!
+    
     @IBOutlet weak var titleField: UITextField!
     @IBOutlet weak var contentField: UITextView!
     @IBOutlet weak var anonymousSwitch: UISwitch!
@@ -77,9 +79,9 @@ class NewAnnouncementViewController: UIViewController {
         }
         
         // 2. Need a room code (set in JoinCodeViewController)
-        guard let roomCode = UserDefaults.standard.string(forKey: "currentRoomCode") else {
+        guard let roomCode = roomCode else {
             showAlert(title: "No Room",
-                      message: "Please join or create a room before posting.")
+                      message: "Cannot post without a room. Please join a room first.")
             return
         }
         

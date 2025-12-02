@@ -73,9 +73,12 @@ class RegisterViewController: UIViewController {
                     }
                 }
             }
+            UserDefaults.standard.removeObject(forKey: "currentRoomCode")
             
-            // Return to login screen
-            self.navigationController?.popViewController(animated: true)
+            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") {
+                tabBar.modalPresentationStyle = .fullScreen
+                self.present(tabBar, animated: true)
+            }
         }
     }
 }
