@@ -122,7 +122,8 @@ class NewAnnouncementViewController: UIViewController {
             .collection("announcements")
         
         // 6. Save to Firestore
-        collection.addDocument(data: data) { [weak self] error in
+        var ref: DocumentReference? = nil
+        ref = collection.addDocument(data: data) { [weak self] error in
             guard let self = self else { return }
             sender.isEnabled = true
             
@@ -133,21 +134,21 @@ class NewAnnouncementViewController: UIViewController {
                 return
             }
             
+            guard let documentID = ref?.documentID else { return }
+            
             let announcement = Announcement(
+                id: documentID,
                 title: title,
                 content: content,
                 author: authorName,
                 isAnonymous: isAnonymous,
                 date: createdAt
             )
-            
-            // Let the list screen update its local array / UI
             self.delegate?.didPostAnnouncement(announcement)
             self.navigationController?.popViewController(animated: true)
         }
     }
     
-    // MARK: - Alerts
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(
             title: title,

@@ -7,6 +7,7 @@ import FirebaseFirestore
 import FirebaseAuth
 
 struct Announcement {
+    let id: String
     let title: String
     let content: String
     let author: String
@@ -74,14 +75,8 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         // Delegate called when user taps Submit in the NewAnnouncement screen
     // Delegate called when user taps Submit in the NewAnnouncement screen
     func didPostAnnouncement(_ announcement: Announcement) {
-        // Firestore listener will refresh the table.
-        // Just show a banner immediately for the user who posted.
-        showNewAnnouncementBanner()
     }
 
-        
-        // MARK: - Table view
-        
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return announcements.count
         }
@@ -103,8 +98,36 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             cell.contentLabel.text = announcement.content
             return cell
         }
-        
-        // MARK: - Banner
+    // Swipe to delete
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { _, _, completion in
+            self.deleteAnnouncement(at: indexPath)
+            completion(true)
+        }
+
+        deleteAction.backgroundColor = .systemRed
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    private func deleteAnnouncement(at indexPath: IndexPath) {
+        guard let roomCode = UserDefaults.standard.string(forKey: "currentRoomCode") else { return }
+
+        let announcementID = announcements[indexPath.row].id
+
+        let collection = db.collection("roommateGroups")
+            .document(roomCode)
+            .collection("announcements")
+
+        collection.document(announcementID).delete { error in
+            if let error = error {
+                print("❌ Delete failed: \(error.localizedDescription)")
+            } else {
+                print("🗑 Successfully deleted")
+            }
+        }
+    }
         
         func showNewAnnouncementBanner() {
             guard notificationsEnabled else { return }
@@ -242,6 +265,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                     let createdAt = (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
                     
                     let announcement = Announcement(
+                        id: doc.documentID,
                         title: title,
                         content: content,
                         author: author,
@@ -269,6 +293,4 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                 self.lastAnnouncementCount = freshAnnouncements.count
             }
     }
-
-
 }
