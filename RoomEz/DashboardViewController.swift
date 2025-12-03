@@ -15,6 +15,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var progressContainer: UIView!
     @IBOutlet weak var detailButton: UIButton!
+    @IBOutlet weak var profileImageView: UIImageView!
     
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
@@ -45,6 +46,13 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         tableView.rowHeight = 110
         tableView.estimatedRowHeight = 110
         
+        profileImageView.image = UIImage(systemName: "person.crop.circle")
+        profileImageView.tintColor = .gray
+
+        profileImageView.layer.masksToBounds = true
+        profileImageView.contentMode = .scaleAspectFill
+
+        
         setupCircularProgress()
         fetchUserData()
         setupTaskObservation()
@@ -57,24 +65,31 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
           fetchUserData()
       }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
+        profileImageView.clipsToBounds = true
+    }
+    
     private func fetchUserData() {
-        // 1️⃣ Use Auth.displayName if available
-        if let displayName = Auth.auth().currentUser?.displayName {
-            let firstName = displayName.components(separatedBy: " ").first ?? ""
-            greetingLabel.text = "Hello \(firstName)!"
-            return
-        }
-        
-        // 2️⃣ Fallback: fetch from Firestore
-        guard let uid = Auth.auth().currentUser?.uid else {
-            greetingLabel.text = "Hello!"
-            return
-        }
-        
-        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let userRef = db.collection("users").document(uid)
+        userRef.getDocument { [weak self] snapshot, error in
             guard let self = self else { return }
-            
-            if let data = snapshot?.data(), let firstName = data["firstName"] as? String {
+
+            if error != nil {
+                print("Dashboard: Error fetching user data")
+                return
+            }
+
+            guard let data = snapshot?.data() else {
+                print("Dashboard: No user data found")
+                return
+            }
+
+            // Load greeting
+            if let firstName = data["firstName"] as? String {
                 DispatchQueue.main.async {
                     self.greetingLabel.text = "Hello \(firstName)!"
                 }
@@ -83,8 +98,25 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                     self.greetingLabel.text = "Hello!"
                 }
             }
+
+            // Load Base64 profile image
+            if let base64String = data["profileImageBase64"] as? String,
+               let imageData = Data(base64Encoded: base64String),
+               let image = UIImage(data: imageData) {
+
+                DispatchQueue.main.async {
+                    self.profileImageView.image = image
+                    self.profileImageView.tintColor = .clear
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.profileImageView.image = UIImage(systemName: "person.crop.circle")
+                    self.profileImageView.tintColor = .gray
+                }
+            }
         }
     }
+
     
     private func setupTaskObservation() {
             // You can use Combine or NotificationCenter to observe changes

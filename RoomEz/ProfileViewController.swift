@@ -22,7 +22,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     var anonymousOn = false
     let db = Firestore.firestore()
     var topBlackView: UIView?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -42,27 +42,27 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func loadRoomCode() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-
+        
         let userRef = db.collection("users").document(uid)
         userRef.getDocument { [weak self] snapshot, error in
             guard let self = self else { return }
-
+            
             if let error = error {
                 print("Error fetching user data: \(error.localizedDescription)")
                 return
             }
-
+            
             var roomText = "No room code"
             if let data = snapshot?.data(), let roomCode = data["currentRoomCode"] as? String, !roomCode.isEmpty {
                 roomText = "Room Code: \(roomCode)"
             }
-
+            
             DispatchQueue.main.async {
                 self.roomCodeLabel.text = roomText
             }
         }
     }
-
+    
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -96,14 +96,14 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     private func setupUI() {
         
         profileImageView.contentMode = .scaleAspectFill
-                
+        
         nameLabel.font = UIFont.boldSystemFont(ofSize: 24)
         nameLabel.textAlignment = .center
-                
+        
         emailLabel.font = UIFont.systemFont(ofSize: 16)
         emailLabel.textColor = .secondaryLabel
         emailLabel.textAlignment = .center
-                
+        
         logoutButton.setTitle("Log out", for: .normal)
         logoutButton.layer.borderWidth = 1
         logoutButton.layer.borderColor = UIColor.black.cgColor
@@ -119,7 +119,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             profileImageView.tintColor = .gray
             return
         }
-
+        
         nameLabel.text = user.displayName ?? "User"
         emailLabel.text = user.email
         
@@ -130,16 +130,16 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
                 print("❌ Error loading user document: \(error.localizedDescription)")
                 return
             }
-
+            
             guard let data = snapshot?.data() else {
                 print("⚠️ No user data found in Firestore")
                 return
             }
-
+            
             if let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
                let profileImage = UIImage(data: imageData) {
-
+                
                 DispatchQueue.main.async {
                     self.profileImageView.image = profileImage
                     self.profileImageView.tintColor = .clear
@@ -211,7 +211,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selected = rows[indexPath.row]
-            
+        
         switch selected {
         case "Edit Profile":
             presentTextInputAlert(title: "Edit Name", placeholder: "Enter new name") { newName in
@@ -230,7 +230,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func switchChanged(_ sender: UISwitch) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let rowTitle = rows[sender.tag]
-            
+        
         if rowTitle == "Notification" {
             notificationOn = sender.isOn
             db.collection("users").document(uid).setData(["notificationOn": notificationOn], merge: true)
@@ -254,14 +254,14 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         })
         present(alert, animated: true)
     }
-            
+    
     func updateFirebaseDisplayName(_ newName: String) {
         guard let user = Auth.auth().currentUser else { return }
         let changeRequest = user.createProfileChangeRequest()
         changeRequest.displayName = newName
         changeRequest.commitChanges { _ in }
     }
-            
+    
     func updateFirebasePassword(_ newPassword: String) {
         Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
             if let error = error {
@@ -269,7 +269,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
-            
+    
     func saveProfileDataToFirestore(firstName: String? = nil, displayName: String? = nil, photoURL: String? = nil) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         var data: [String: Any] = [:]
@@ -278,7 +278,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let photoURL = photoURL { data["photoURL"] = photoURL }
         db.collection("users").document(uid).setData(data, merge: true)
     }
-
+    
     
     @IBAction func editPhotoButtonPressed(_ sender: UIButton) {
         let picker = UIImagePickerController()
@@ -299,38 +299,38 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-            
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            picker.dismiss(animated: true)
-            guard let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage else { return }
-            self.profileImageView.image = selectedImage
-            uploadProfilePhotoToFirebase(selectedImage)
-        }
-            
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        guard let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage else { return }
+        self.profileImageView.image = selectedImage
+        uploadProfilePhotoToFirebase(selectedImage)
+    }
+    
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
     }
-            
+    
     
     func uploadProfilePhotoToFirebase(_ image: UIImage) {
         guard let user = Auth.auth().currentUser else { return }
         let uid = user.uid
-
+        
         // Resize to 256x256
         let targetSize = CGSize(width: 256, height: 256)
         UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
         image.draw(in: CGRect(origin: .zero, size: targetSize))
         let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-
+        
         guard let finalImage = resizedImage,
               let imageData = finalImage.jpegData(compressionQuality: 0.7) else {
             print("❌ Could not resize image")
             return
         }
-
+        
         let base64String = imageData.base64EncodedString()
-
+        
         // Save Base64 string to Firestore
         db.collection("users").document(uid).setData([
             "profileImageBase64": base64String
@@ -340,21 +340,32 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
                 return
             }
             print("🔥 Saved Base64 image to Firestore!")
-
+            
             DispatchQueue.main.async {
                 self.profileImageView.image = finalImage
             }
         }
     }
-        
+    
     // MARK: - Log Out
     // NOTE: This @IBAction must be present for the Storyboard connection to work.
     @IBAction func logoutPressed(_ sender: UIButton) {
         do {
             try Auth.auth().signOut()
             UserDefaults.standard.removeObject(forKey: "currentRoomCode")
+            
+            // Load LoginViewController as NEW root
             if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
-                navigationController?.setViewControllers([loginVC], animated: true)
+                
+                guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                      let window = sceneDelegate.window else {
+                    return
+                }
+                
+                window.rootViewController = loginVC
+                UIView.transition(with: window, duration: 0.3,
+                                  options: .transitionFlipFromLeft,
+                                  animations: nil, completion: nil)
             }
         } catch {
             print("Error signing out: \(error.localizedDescription)")

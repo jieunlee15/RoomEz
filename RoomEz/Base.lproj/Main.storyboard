@@ -1520,7 +1520,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sIN-3N-rEc">
-                                <rect key="frame" x="55" y="106" width="327" height="48"/>
+                                <rect key="frame" x="83" y="106" width="327" height="48"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="327" id="I8F-eO-nzZ"/>
                                     <constraint firstAttribute="height" constant="48" id="UPC-ZD-uA1"/>
@@ -1648,12 +1648,21 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="siZ-m0-zPt">
+                                <rect key="frame" x="22" y="106" width="48" height="48"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="48" id="Lru-Vz-ous"/>
+                                    <constraint firstAttribute="height" constant="48" id="g29-5Z-uQg"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="hdi-0d-TRT"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="sIN-3N-rEc" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="55" id="4x7-b7-hpd"/>
+                            <constraint firstItem="sIN-3N-rEc" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="83" id="4x7-b7-hpd"/>
                             <constraint firstItem="hdi-0d-TRT" firstAttribute="trailing" secondItem="fke-D5-5Qj" secondAttribute="trailing" constant="45" id="92q-L8-xzp"/>
+                            <constraint firstItem="siZ-m0-zPt" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="22" id="EnP-5G-TYN"/>
+                            <constraint firstItem="hdi-0d-TRT" firstAttribute="top" secondItem="siZ-m0-zPt" secondAttribute="top" id="I5i-uf-86i"/>
                             <constraint firstItem="dH0-If-IRu" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="25" id="LG2-YY-rX4"/>
                             <constraint firstItem="fke-D5-5Qj" firstAttribute="top" secondItem="sIN-3N-rEc" secondAttribute="bottom" constant="32" id="Wr0-xU-M27"/>
                             <constraint firstItem="hdi-0d-TRT" firstAttribute="top" secondItem="sIN-3N-rEc" secondAttribute="top" id="bJL-lh-Jf5"/>
@@ -1671,6 +1680,7 @@
                         <outlet property="detailButton" destination="T7z-pW-k2V" id="LSg-Ly-yaC"/>
                         <outlet property="greetingLabel" destination="sIN-3N-rEc" id="ejd-TG-QCx"/>
                         <outlet property="messageLabel" destination="vGv-bF-JWb" id="ukT-H4-XW9"/>
+                        <outlet property="profileImageView" destination="siZ-m0-zPt" id="8Wa-Tu-kbe"/>
                         <outlet property="progressContainer" destination="fke-D5-5Qj" id="AQo-LN-bWv"/>
                         <outlet property="progressLabel" destination="Qzr-Ai-IOl" id="WC9-HX-BpM"/>
                         <outlet property="tableView" destination="elp-IJ-q2x" id="sa6-O8-GRF"/>
