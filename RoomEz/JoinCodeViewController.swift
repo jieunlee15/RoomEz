@@ -65,3 +65,4 @@ class JoinCodeViewController: UIViewController {
         present(alert, animated: true)
     }
 }
+

@@ -217,7 +217,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             presentTextInputAlert(title: "Edit Name", placeholder: "Enter new name") { newName in
                 self.nameLabel.text = newName
                 self.updateFirebaseDisplayName(newName)
-                self.saveProfileDataToFirestore(name: newName)
+                self.saveProfileDataToFirestore(firstName: newName, displayName: newName)
             }
         case "Password":
             presentTextInputAlert(title: "Change Password", placeholder: "Enter new password", isSecure: true) { newPassword in
@@ -270,13 +270,15 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
             
-    func saveProfileDataToFirestore(name: String? = nil, photoURL: String? = nil) {
+    func saveProfileDataToFirestore(firstName: String? = nil, displayName: String? = nil, photoURL: String? = nil) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         var data: [String: Any] = [:]
-        if let name = name { data["displayName"] = name }
+        if let firstName = firstName { data["firstName"] = firstName }
+        if let displayName = displayName { data["displayName"] = displayName }
         if let photoURL = photoURL { data["photoURL"] = photoURL }
         db.collection("users").document(uid).setData(data, merge: true)
     }
+
     
     @IBAction func editPhotoButtonPressed(_ sender: UIButton) {
         let picker = UIImagePickerController()

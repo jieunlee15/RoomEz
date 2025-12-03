@@ -3,6 +3,8 @@
 //  Created by Jieun Lee on 11/7/25.
 
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
 class DashboardViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
@@ -12,20 +14,28 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var progressLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var progressContainer: UIView!
-    
     @IBOutlet weak var detailButton: UIButton!
+    
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
     
     private var taskManager = TaskManager.shared
-    
     // Filtered array: only uncompleted tasks
     private var filteredTasks: [RoomTask] {
         taskManager.tasks.filter { $0.status != .done }
     }
+    
+    // Firestore reference
+    private let db = Firestore.firestore()
+    
+    // User info cache
+    private var firstName: String?
+    private var roomCode: String?
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         let lineView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 0.5))
         lineView.backgroundColor = UIColor.separator
         tableView.tableHeaderView = lineView
@@ -36,18 +46,51 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         tableView.estimatedRowHeight = 110
         
         setupCircularProgress()
-        greetingLabel.text = "Hello Lucy!"
+        fetchUserData()
         setupTaskObservation()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+          super.viewWillAppear(animated)
+          updateProgress()
+          tableView.reloadData()
+          fetchUserData()
+      }
+    
+    private func fetchUserData() {
+        // 1️⃣ Use Auth.displayName if available
+        if let displayName = Auth.auth().currentUser?.displayName {
+            let firstName = displayName.components(separatedBy: " ").first ?? ""
+            greetingLabel.text = "Hello \(firstName)!"
+            return
+        }
+        
+        // 2️⃣ Fallback: fetch from Firestore
+        guard let uid = Auth.auth().currentUser?.uid else {
+            greetingLabel.text = "Hello!"
+            return
+        }
+        
+        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
+            guard let self = self else { return }
+            
+            if let data = snapshot?.data(), let firstName = data["firstName"] as? String {
+                DispatchQueue.main.async {
+                    self.greetingLabel.text = "Hello \(firstName)!"
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.greetingLabel.text = "Hello!"
+                }
+            }
+        }
+    }
+    
     private func setupTaskObservation() {
             // You can use Combine or NotificationCenter to observe changes
             // For simplicity, we'll update when the view appears and when tasks change
         }
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        updateProgress()
-        tableView.reloadData()
-    }
+
     @IBAction func detailPressed(_ sender: Any) {
         self.performSegue(withIdentifier: "toTaskTabBar", sender: self)
     }
@@ -186,38 +229,38 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         banner.layer.shadowOffset = CGSize(width: 0, height: 2)
         banner.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(banner)
-
+        
         let label = UILabel()
         label.text = message
         label.textColor = .white
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         banner.addSubview(label)
-
+        
         let top = banner.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -bannerHeight)
         NSLayoutConstraint.activate([
-        banner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-        banner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-        banner.heightAnchor.constraint(equalToConstant: bannerHeight),
-                top,
-        label.leadingAnchor.constraint(equalTo: banner.leadingAnchor, constant: 12),
-        label.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: -12),
-        label.topAnchor.constraint(equalTo: banner.topAnchor),
-        label.bottomAnchor.constraint(equalTo: banner.bottomAnchor)
-    ])
-    view.layoutIfNeeded()
-
-    top.constant = 16
-    UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0.4, options: [], animations: {
-                self.view.layoutIfNeeded()
-    })
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
-        UIView.animate(withDuration: 0.25, animations: {
-            banner.transform = CGAffineTransform(translationX: 0, y: -bannerHeight - 20)
-            banner.alpha = 0
-        }, completion: { _ in banner.removeFromSuperview() })
+            banner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            banner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            banner.heightAnchor.constraint(equalToConstant: bannerHeight),
+            top,
+            label.leadingAnchor.constraint(equalTo: banner.leadingAnchor, constant: 12),
+            label.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: -12),
+            label.topAnchor.constraint(equalTo: banner.topAnchor),
+            label.bottomAnchor.constraint(equalTo: banner.bottomAnchor)
+        ])
+        view.layoutIfNeeded()
+        
+        top.constant = 16
+        UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0.4, options: [], animations: {
+            self.view.layoutIfNeeded()
+        })
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+            UIView.animate(withDuration: 0.25, animations: {
+                banner.transform = CGAffineTransform(translationX: 0, y: -bannerHeight - 20)
+                banner.alpha = 0
+            }, completion: { _ in banner.removeFromSuperview() })
+        }
     }
-}
 }
 
