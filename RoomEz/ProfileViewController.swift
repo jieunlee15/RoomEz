@@ -122,40 +122,36 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         nameLabel.text = user.displayName ?? "User"
         emailLabel.text = user.email
-
+        
         let uid = user.uid
         
-        // Temporarily keep the current picture while loading — prevents flicker
-        let currentImage = profileImageView.image
-
-        db.collection("users").document(uid).getDocument { snapshot, _ in
-            let data = snapshot?.data()
-            var didLoadImage = false
-
-            if let urlStr = data?["photoURL"] as? String,
-               !urlStr.isEmpty,
-               let url = URL(string: urlStr) {
-                didLoadImage = true
-                self.downloadAndSetImage(url)
+        db.collection("users").document(uid).getDocument { snapshot, error in
+            if let error = error {
+                print("❌ Error loading user document: \(error.localizedDescription)")
+                return
             }
 
-            if !didLoadImage, let authPhotoURL = user.photoURL {
-                didLoadImage = true
-                self.downloadAndSetImage(authPhotoURL)
+            guard let data = snapshot?.data() else {
+                print("⚠️ No user data found in Firestore")
+                return
             }
 
-            if !didLoadImage {
+            if let base64String = data["profileImageBase64"] as? String,
+               let imageData = Data(base64Encoded: base64String),
+               let profileImage = UIImage(data: imageData) {
+
                 DispatchQueue.main.async {
-                    // Only apply default if we truly have no saved pic
-                    if currentImage == nil {
-                        self.profileImageView.image = UIImage(systemName: "person.circle.fill")
-                        self.profileImageView.tintColor = .gray
-                    }
+                    self.profileImageView.image = profileImage
+                    self.profileImageView.tintColor = .clear
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.profileImageView.image = UIImage(systemName: "person.circle.fill")
+                    self.profileImageView.tintColor = .gray
                 }
             }
         }
     }
-
     
     private func downloadAndSetImage(_ url: URL) {
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -324,62 +320,42 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         picker.dismiss(animated: true)
     }
             
+    
     func uploadProfilePhotoToFirebase(_ image: UIImage) {
-        guard let imageData = image.jpegData(compressionQuality: 0.8),
-              let user = Auth.auth().currentUser else {
-            print("❌ No user")
+        guard let user = Auth.auth().currentUser else { return }
+        let uid = user.uid
+
+        // Resize to 256x256
+        let targetSize = CGSize(width: 256, height: 256)
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
+        image.draw(in: CGRect(origin: .zero, size: targetSize))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        guard let finalImage = resizedImage,
+              let imageData = finalImage.jpegData(compressionQuality: 0.7) else {
+            print("❌ Could not resize image")
             return
         }
 
-        let uid = user.uid
-        let storageRef = Storage.storage().reference()
-            .child("profilePhotos/\(uid).jpg")
+        let base64String = imageData.base64EncodedString()
 
-        print("⬆️ Uploading image for user: \(uid)")
-
-        storageRef.putData(imageData, metadata: nil) { _, error in
+        // Save Base64 string to Firestore
+        db.collection("users").document(uid).setData([
+            "profileImageBase64": base64String
+        ], merge: true) { error in
             if let error = error {
-                print("❌ Upload failed: \(error.localizedDescription)")
+                print("❌ Firestore Save Failed: \(error.localizedDescription)")
                 return
             }
-            print("☁️ Upload success")
+            print("🔥 Saved Base64 image to Firestore!")
 
-            storageRef.downloadURL { url, _ in
-                guard let downloadURL = url else {
-                    print("❌ Failed to get downloadURL")
-                    return
-                }
-                print("🔗 Got downloadURL: \(downloadURL.absoluteString)")
-
-                // Update FirebaseAuth FIRST
-                let changeRequest = user.createProfileChangeRequest()
-                changeRequest.photoURL = downloadURL
-
-                changeRequest.commitChanges { error in
-                    if let error = error {
-                        print("❌ Auth update failed: \(error.localizedDescription)")
-                    } else {
-                        print("👤 FirebaseAuth updated with new photoURL")
-                    }
-
-                    // Now Firestore
-                    self.db.collection("users").document(uid)
-                        .setData(["photoURL": downloadURL.absoluteString], merge: true) { error in
-                            
-                            if let error = error {
-                                print("❌ Firestore save failed: \(error.localizedDescription)")
-                            } else {
-                                print("🔥 Firestore photoURL saved successfully!")
-                            }
-                            
-                            DispatchQueue.main.async {
-                                self.loadUserData()
-                            }
-                        }
-                }
+            DispatchQueue.main.async {
+                self.profileImageView.image = finalImage
             }
         }
     }
+
 
 
 
