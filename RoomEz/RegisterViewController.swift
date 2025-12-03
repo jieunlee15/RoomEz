@@ -65,11 +65,8 @@ class RegisterViewController: UIViewController {
                     }
                 }
             }
-            
-            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") {
-                tabBar.modalPresentationStyle = .fullScreen
-                self.present(tabBar, animated: true)
-            }
+        
+            self.performSegue(withIdentifier: "toLogin", sender: self)
         }
     }
 }

@@ -128,9 +128,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     // Delegate called when user taps Submit in the NewAnnouncement screen
     func didPostAnnouncement(_ announcement: Announcement) {
         // Insert locally for immediate feedback
-        //announcements.insert(announcement, at: 0)
         tableView.reloadData()
-            // banner can be shown if you want
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

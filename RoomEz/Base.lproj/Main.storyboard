@@ -1280,6 +1280,7 @@
                         <outlet property="lastName" destination="Flz-5h-rqo" id="biG-Bo-Fsw"/>
                         <outlet property="passwordText" destination="egB-F2-TuN" id="ucg-a3-LQW"/>
                         <outlet property="registerButton" destination="90z-4b-d4w" id="zgd-Jz-zB3"/>
+                        <segue destination="aSe-bq-DPe" kind="show" identifier="toLogin" id="AHD-Ch-0eT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="m6K-15-28N" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2126,6 +2127,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="MJP-CM-tfj"/>
+        <segue reference="AHD-Ch-0eT"/>
         <segue reference="G9Z-gY-eNZ"/>
         <segue reference="6AQ-5T-Jqu"/>
     </inferredMetricsTieBreakers>

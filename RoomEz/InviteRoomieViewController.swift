@@ -53,14 +53,6 @@ class InviteRoomieViewController: UIViewController {
 
             // Save the room code only after successful creation
             Firestore.firestore().collection("users").document(uid).updateData(["currentRoomCode": code])
-
-            DispatchQueue.main.async {
-                guard let nav = self.navigationController else { return }
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                let annVC = storyboard.instantiateViewController(withIdentifier: "MessagesVC") as! AnnouncementViewController
-                annVC.setRoomCode(code)
-                nav.setViewControllers([annVC], animated: true)
-            }
         }
     }
 }
