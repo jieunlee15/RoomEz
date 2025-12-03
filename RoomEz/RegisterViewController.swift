@@ -5,6 +5,7 @@
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 class RegisterViewController: UIViewController {
     
@@ -47,25 +48,39 @@ class RegisterViewController: UIViewController {
                 self.errorMessage.text = error.localizedDescription
                 return
             }
+            
             self.errorMessage.text = ""
             
-            // Save user info in Firestore
-            if let uid = authResult?.user.uid {
-                Firestore.firestore().collection("users").document(uid).setData([
-                    "firstName": fName,
-                    "lastName": lName,
-                    "email": email,
-                    "createdAt": Timestamp(),
-                    "currentRoomCode": "" // empty initially
-                ]) { error in
-                    if let error = error {
-                        print("Error saving user: \(error.localizedDescription)")
-                    } else {
-                        print("User successfully saved to Firestore!")
-                    }
+            guard let user = authResult?.user else { return }
+            let displayName = "\(fName) \(lName)"
+            
+            // Update Auth display name
+            let changeRequest = user.createProfileChangeRequest()
+            changeRequest.displayName = displayName
+            changeRequest.commitChanges { _ in }
+            
+            // Prepare Firestore user data
+            let userData: [String: Any] = [
+                "firstName": fName,
+                "lastName": lName,
+                "displayName": displayName,
+                "email": email,
+                "photoURL": "",           // empty initially
+                "notificationOn": true,
+                "anonymousOn": false,
+                "currentRoomCode": "",
+                "createdAt": Timestamp()
+            ]
+            
+            Firestore.firestore().collection("users").document(user.uid).setData(userData) { error in
+                if let error = error {
+                    print("Error saving user: \(error.localizedDescription)")
+                } else {
+                    print("User successfully saved to Firestore!")
                 }
             }
-        
+            
+            // Go to login or main screen
             self.performSegue(withIdentifier: "toLogin", sender: self)
         }
     }
