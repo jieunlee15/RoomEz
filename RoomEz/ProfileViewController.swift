@@ -153,17 +153,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    private func downloadAndSetImage(_ url: URL) {
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil,
-                  let image = UIImage(data: data) else { return }
-
-            DispatchQueue.main.async {
-                self.profileImageView.image = image
-            }
-        }.resume()
-    }
-    
     private func loadSettingsFromFirestore() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         db.collection("users").document(uid).getDocument { snapshot, _ in
@@ -355,10 +344,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
-
-
-
-
         
     // MARK: - Log Out
     // NOTE: This @IBAction must be present for the Storyboard connection to work.

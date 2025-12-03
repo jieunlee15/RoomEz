@@ -80,8 +80,11 @@ class RegisterViewController: UIViewController {
                 }
             }
             
-            // Go to login or main screen
-            self.performSegue(withIdentifier: "toLogin", sender: self)
+            // Go directly to main tab bar (Messages tab) instead of login
+            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? UITabBarController {
+                tabBar.selectedIndex = 2 // Messages tab
+                self.navigationController?.setViewControllers([tabBar], animated: true)
+            }
         }
     }
 }

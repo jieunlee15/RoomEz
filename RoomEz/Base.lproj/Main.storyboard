@@ -163,7 +163,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="B9f-a3-2ul" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="10618.636363636364" y="288.70292887029291"/>
+            <point key="canvasLocation" x="9648" y="289"/>
         </scene>
         <!--Initial Message View Controller-->
         <scene sceneID="GrD-Gl-2Vv">
@@ -352,7 +352,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZEe-ku-iUb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="11286.818181818182" y="288.70292887029291"/>
+            <point key="canvasLocation" x="10436" y="289"/>
         </scene>
         <!--Profile View Controller-->
         <scene sceneID="grX-Ii-eyH">
@@ -1298,7 +1298,6 @@
                         <outlet property="lastName" destination="Flz-5h-rqo" id="biG-Bo-Fsw"/>
                         <outlet property="passwordText" destination="egB-F2-TuN" id="ucg-a3-LQW"/>
                         <outlet property="registerButton" destination="90z-4b-d4w" id="zgd-Jz-zB3"/>
-                        <segue destination="aSe-bq-DPe" kind="show" identifier="toLogin" id="AHD-Ch-0eT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="m6K-15-28N" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2145,7 +2144,6 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="MJP-CM-tfj"/>
-        <segue reference="FnC-Vm-eQy"/>
         <segue reference="G9Z-gY-eNZ"/>
         <segue reference="6AQ-5T-Jqu"/>
     </inferredMetricsTieBreakers>
