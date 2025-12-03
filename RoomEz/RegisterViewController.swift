@@ -18,18 +18,14 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         registerButton.layer.cornerRadius = 10
         registerButton.clipsToBounds = true
-        
         errorMessage.textColor = .systemRed
         errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
     }
     
     @IBAction func registerButtonPressed(_ sender: Any) {
-        
-        // Validate all fields
         guard let fName = firstName.text, !fName.isEmpty,
               let lName = lastName.text, !lName.isEmpty,
               let email = emailText.text, !email.isEmpty,
@@ -44,27 +40,23 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        // Create user with Firebase Auth
         Auth.auth().createUser(withEmail: email, password: password) { [weak self]
             authResult, error in
-            
             guard let self = self else { return }
-            
             if let error = error {
                 self.errorMessage.text = error.localizedDescription
                 return
             }
-            
             self.errorMessage.text = ""
             
             // Save user info in Firestore
-            let db = Firestore.firestore()
             if let uid = authResult?.user.uid {
-                db.collection("users").document(uid).setData([
+                Firestore.firestore().collection("users").document(uid).setData([
                     "firstName": fName,
                     "lastName": lName,
                     "email": email,
-                    "createdAt": Timestamp()
+                    "createdAt": Timestamp(),
+                    "currentRoomCode": "" // empty initially
                 ]) { error in
                     if let error = error {
                         print("Error saving user: \(error.localizedDescription)")
@@ -73,7 +65,6 @@ class RegisterViewController: UIViewController {
                     }
                 }
             }
-            UserDefaults.standard.removeObject(forKey: "currentRoomCode")
             
             if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") {
                 tabBar.modalPresentationStyle = .fullScreen

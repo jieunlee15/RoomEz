@@ -12,7 +12,7 @@ protocol NewAnnouncementDelegate: AnyObject {
 
 class NewAnnouncementViewController: UIViewController {
     
-    var roomCode: String!
+    var roomCode: String?
     
     @IBOutlet weak var titleField: UITextField!
     @IBOutlet weak var contentField: UITextView!

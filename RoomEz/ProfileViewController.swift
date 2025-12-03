@@ -48,7 +48,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         topBlackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(topBlackView)
         view.sendSubviewToBack(topBlackView) // ensures profile image is on top
-
+        
         NSLayoutConstraint.activate([
             topBlackView.topAnchor.constraint(equalTo: view.topAnchor),
             topBlackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -62,7 +62,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         editPhotoButton.layer.shadowOpacity = 0.2
         editPhotoButton.layer.shadowRadius = 4
         editPhotoButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-
+        
     }
     private func setupUI() {
         profileImageView.image = UIImage(systemName: "person.circle.fill")
@@ -75,7 +75,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         emailLabel.font = UIFont.systemFont(ofSize: 16)
         emailLabel.textColor = .secondaryLabel
         emailLabel.textAlignment = .center
-
+        
         logoutButton.setTitle("Log out", for: .normal)
         logoutButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
         logoutButton.layer.borderWidth = 1
@@ -152,12 +152,12 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         case "Anonymous":          cellIdentifier = "anonymousCell"
         default:                   cellIdentifier = "OptionCell"
         }
-
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
-
+        
         cell.textLabel?.text = rowTitle
         cell.textLabel?.font = UIFont(name: "SFProText-Medium", size: 16) ?? UIFont.systemFont(ofSize: 16, weight: .medium)
-
+        
         if rowTitle == "Notification" || rowTitle == "Anonymous" {
             let toggleSwitch = UISwitch()
             toggleSwitch.isOn = (rowTitle == "Notification") ? notificationOn : anonymousOn
@@ -166,10 +166,10 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             // ⭐ Switch size tweak (24x24)
             toggleSwitch.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-
+            
             // ⭐ Use accessory view container to force alignment to edge
             let container = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
-
+            
             container.addSubview(toggleSwitch)
             toggleSwitch.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -275,39 +275,39 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.allowsEditing = true
-
+        
         // Use .alert to make it centered
         let alert = UIAlertController(title: "Select Photo", message: nil, preferredStyle: .alert)
-
+        
         alert.addAction(UIAlertAction(title: "Take Photo", style: .default, handler: { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 picker.sourceType = .camera
                 self.present(picker, animated: true)
             }
         }))
-
+        
         alert.addAction(UIAlertAction(title: "Choose from Album", style: .default, handler: { _ in
             picker.sourceType = .photoLibrary
             self.present(picker, animated: true)
         }))
-
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-
+        
         present(alert, animated: true)
     }
-
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            picker.dismiss(animated: true)
-            guard let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage else { return }
-
-            // Update UI immediately
-            DispatchQueue.main.async {
-                self.profileImageView.image = selectedImage
-            }
-
-            // Upload to Firebase
-            uploadProfilePhotoToFirebase(selectedImage)
+        picker.dismiss(animated: true)
+        guard let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage else { return }
+        
+        // Update UI immediately
+        DispatchQueue.main.async {
+            self.profileImageView.image = selectedImage
         }
+        
+        // Upload to Firebase
+        uploadProfilePhotoToFirebase(selectedImage)
+    }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
@@ -316,7 +316,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     func uploadProfilePhotoToFirebase(_ image: UIImage) {
         guard let imageData = image.jpegData(compressionQuality: 0.8),
               let user = Auth.auth().currentUser else { return }
-
+        
         let storageRef = Storage.storage().reference().child("profilePhotos/\(user.uid).jpg")
         storageRef.putData(imageData, metadata: nil) { _, error in
             guard error == nil else { return }
@@ -331,18 +331,29 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
-
-        // MARK: - Log Out
-        // NOTE: This @IBAction must be present for the Storyboard connection to work.
-        @IBAction func logoutPressed(_ sender: UIButton) {
-            do {
-                // 1. Sign out the current user from Firebase Auth
-                try Auth.auth().signOut()
-                if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
-                    navigationController?.setViewControllers([loginVC], animated: true)
+    
+    // MARK: - Log Out
+    // NOTE: This @IBAction must be present for the Storyboard connection to work.
+    @IBAction func logoutPressed(_ sender: UIButton) {
+        do {
+            try Auth.auth().signOut()
+            // Clear stored room code
+            UserDefaults.standard.removeObject(forKey: "currentRoomCode")
+            
+            // Optionally, clear Announcement VC listener if present
+            if let tabBar = self.tabBarController {
+                let messagesTabIndex = 2
+                if let nav = tabBar.viewControllers?[messagesTabIndex] as? UINavigationController,
+                   let messagesVC = nav.viewControllers.first as? AnnouncementViewController {
+                    messagesVC.setRoomCode("") // or implement a clear() method to remove listener and clear UI
                 }
-            } catch {
-                print("Error signing out: \(error.localizedDescription)")
             }
+            
+            if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
+                navigationController?.setViewControllers([loginVC], animated: true)
+            }
+        } catch {
+            print("Error signing out: \(error.localizedDescription)")
         }
-    } // End of class
+    }
+}

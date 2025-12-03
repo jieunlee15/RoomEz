@@ -18,13 +18,21 @@ struct Announcement {
 class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITableViewDelegate, NewAnnouncementDelegate {
     
     @IBOutlet weak var tableView: UITableView!
+    
     var announcements: [Announcement] = []
-    var roomCode: String?
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
     private var hasLoadedOnce = false
     private var notificationsEnabled = true
     private var lastAnnouncementCount = 0
+    
+    var roomCode: String? {
+        didSet {
+            if isViewLoaded {
+                startListening(for: roomCode)
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,7 +41,6 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 167
         
-        loadNotificationPreference()
         if let code = roomCode {
             startListening(for: code)
         }
@@ -43,22 +50,14 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         listener?.remove()
     }
     
-    func setRoomCode(_ code: String) {
-        // Remove old listener
-        listener?.remove()
-        listener = nil
-        
-        roomCode = code
-        hasLoadedOnce = false
-        lastAnnouncementCount = 0
-        announcements = []
-        tableView.reloadData()
-        
-        startListening(for: code)
+    func setRoomCode(_ code: String?) {
+        self.roomCode = code
     }
     
-    // MARK: - Firestore listener
-    private func startListening(for code: String) {
+    private func startListening(for roomCode: String?) {
+        listener?.remove()
+        guard let code = roomCode, !code.isEmpty else { return }
+        
         let collection = db.collection("roommateGroups")
             .document(code)
             .collection("announcements")
@@ -67,13 +66,13 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             .order(by: "createdAt", descending: true)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self = self else { return }
-                guard let docs = snapshot?.documents else { return }
+                guard let documents = snapshot?.documents else { return }
                 
                 let now = Date()
                 var freshAnnouncements: [Announcement] = []
                 var expiredIDs: [String] = []
                 
-                for doc in docs {
+                for doc in documents {
                     let data = doc.data()
                     if data["isArchived"] as? Bool ?? false { continue }
                     
@@ -94,6 +93,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                     freshAnnouncements.append(announcement)
                 }
                 
+                // Show banner only for new announcements after first load
                 if self.hasLoadedOnce,
                    freshAnnouncements.count > self.lastAnnouncementCount {
                     self.showNewAnnouncementBanner()
@@ -104,26 +104,13 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                 self.announcements = freshAnnouncements
                 self.tableView.reloadData()
                 
-                // Archive expired
+                // Archive expired announcements
                 for id in expiredIDs {
                     collection.document(id).updateData(["isArchived": true])
                 }
             }
     }
     
-    // MARK: - User notification setting
-    
-    private func loadNotificationPreference() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        db.collection("users").document(uid).getDocument { [weak self] snap, _ in
-            guard let self = self else { return }
-            if let data = snap?.data() {
-                self.notificationsEnabled = data["notificationOn"] as? Bool ?? true
-            }
-        }
-    }
-    
-    // MARK: - Add new announcement
     
     @IBAction func addAnnouncementTapped(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "showNewAnnouncement", sender: self)
@@ -132,16 +119,18 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showNewAnnouncement",
            let dest = segue.destination as? NewAnnouncementViewController {
-                       dest.delegate = self
-            if let code = roomCode {
-                dest.roomCode = code
-            }
+            dest.delegate = self
+            dest.roomCode = roomCode
         }
     }
     
     // Delegate called when user taps Submit in the NewAnnouncement screen
     // Delegate called when user taps Submit in the NewAnnouncement screen
     func didPostAnnouncement(_ announcement: Announcement) {
+        // Insert locally for immediate feedback
+        //announcements.insert(announcement, at: 0)
+        tableView.reloadData()
+            // banner can be shown if you want
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -154,9 +143,11 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             for: indexPath
         ) as! AnnouncementCell
         let announcement = announcements[indexPath.row]
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MM-dd"
         let dateString = dateFormatter.string(from: announcement.date)
+        
         cell.authorLabel.text = "\(announcement.author) | \(dateString)"
         cell.titleLabel.text = announcement.title
         cell.contentLabel.text = announcement.content
@@ -261,8 +252,8 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         })
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
+    /*override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         listener?.remove()
-    }
+    }*/
 }

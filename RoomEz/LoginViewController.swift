@@ -4,6 +4,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseFirestore
 
 class LoginViewController: UIViewController {
     
@@ -11,17 +12,14 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
     @IBOutlet weak var loginButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         loginButton.layer.cornerRadius = 10
         loginButton.clipsToBounds = true
-        
         errorMessage.textColor = .systemRed
         errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
-        
-        //passwordText.isSecureTextEntry = true
-        
     }
     
     
@@ -47,7 +45,7 @@ class LoginViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toMessageLog" {
             if let tabBar = segue.destination as? UITabBarController {
-                tabBar.selectedIndex = 2  // 👈 This selects the second tab
+                tabBar.selectedIndex = 2  
             }
         }
     }

@@ -9,12 +9,7 @@ import FirebaseAuth
 class JoinCodeViewController: UIViewController {
     
     @IBOutlet weak var codeTextField: UITextField!
-    
     let db = Firestore.firestore()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
     
     @IBAction func joinButtonTapped(_ sender: UIButton) {
         guard let enteredCode = codeTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -27,47 +22,36 @@ class JoinCodeViewController: UIViewController {
     }
     
     func joinRoom(with code: String) {
-        guard let currentUserID = Auth.auth().currentUser?.uid else {
-            showAlert(title: "Error", message: "You must be logged in to join a room.")
-            return
-        }
-        
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         let roomRef = db.collection("roommateGroups").document(code)
         
         roomRef.getDocument { document, error in
             if let error = error {
-                print("Error fetching room: \(error)")
-                self.showAlert(title: "Error", message: "Could not connect to the server. Try again.")
+                self.showAlert(title: "Error", message: "Could not connect. Try again.")
+                print(error)
                 return
             }
             
             guard let document = document, document.exists else {
-                self.showAlert(title: "Invalid Code", message: "The room code you entered does not exist.")
+                self.showAlert(title: "Invalid Code", message: "Room code does not exist.")
                 return
             }
             
-            // Add user to members array
-            roomRef.updateData([
-                "members": FieldValue.arrayUnion([currentUserID])
-            ]) { error in
+            roomRef.updateData(["members": FieldValue.arrayUnion([uid])]) { error in
                 if let error = error {
-                    print("Error joining room: \(error)")
-                    self.showAlert(title: "Error", message: "Could not join room. Please try again.")
+                    self.showAlert(title: "Error", message: "Could not join room.")
+                    print(error)
                 } else {
-                    // Save room code
-                    UserDefaults.standard.set(code, forKey: "currentRoomCode")
+                    // Persist room code
+                    Firestore.firestore().collection("users").document(uid)
+                        .updateData(["currentRoomCode": code])
                     
-                    // Switch Messages tab to MessagesVC immediately
-                    if let tabBar = self.tabBarController {
-                        let messagesTabIndex = 2 // your Messages tab index
-                        tabBar.selectedIndex = messagesTabIndex
-                        
-                        if let nav = tabBar.viewControllers?[messagesTabIndex] as? UINavigationController,
-                           let messagesVC = nav.viewControllers.first as? AnnouncementViewController {
-                            
-                            // Update the room code dynamically
-                            messagesVC.setRoomCode(code)
-                        }
+                    DispatchQueue.main.async {
+                        guard let nav = self.navigationController else { return }
+                        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                        let annVC = storyboard.instantiateViewController(withIdentifier: "MessagesVC") as! AnnouncementViewController
+                        annVC.setRoomCode(code)
+                        nav.setViewControllers([annVC], animated: true)
                     }
                 }
             }

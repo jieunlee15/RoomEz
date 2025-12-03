@@ -15,9 +15,7 @@ class InviteRoomieViewController: UIViewController {
         super.viewDidLoad()
         let newCode = generateRandomCode()
         generatedCodeLabel.text = newCode
-
         createRoomInFirestore(code: newCode)
-        UserDefaults.standard.set(newCode, forKey: "currentRoomCode")
     }
 
     func generateRandomCode(length: Int = 4) -> String {
@@ -38,18 +36,30 @@ class InviteRoomieViewController: UIViewController {
 
     func createRoomInFirestore(code: String) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-
         let roomRef = db.collection("roommateGroups").document(code)
 
         roomRef.setData([
             "code": code,
             "members": [uid],
             "createdAt": Timestamp()
-        ]) { error in
+        ]) { [weak self] error in
+            guard let self = self else { return }
             if let error = error {
-                print("Error creating room: \(error)")
-            } else {
-                print("Room created with code: \(code)")
+                print("Error creating room: \(error.localizedDescription)")
+                // optionally show an alert
+                return
+            }
+            print("Room created with code: \(code)")
+
+            // Save the room code only after successful creation
+            Firestore.firestore().collection("users").document(uid).updateData(["currentRoomCode": code])
+
+            DispatchQueue.main.async {
+                guard let nav = self.navigationController else { return }
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let annVC = storyboard.instantiateViewController(withIdentifier: "MessagesVC") as! AnnouncementViewController
+                annVC.setRoomCode(code)
+                nav.setViewControllers([annVC], animated: true)
             }
         }
     }
