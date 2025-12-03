@@ -249,9 +249,4 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             banner.removeFromSuperview()
         })
     }
-
-    /*override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        listener?.remove()
-    }*/
 }

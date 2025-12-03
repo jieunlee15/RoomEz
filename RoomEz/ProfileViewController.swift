@@ -339,13 +339,13 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
                     // Now Firestore
                     self.db.collection("users").document(uid)
                         .setData(["photoURL": downloadURL.absoluteString], merge: true) { error in
-                        
+                            
                             if let error = error {
                                 print("❌ Firestore save failed: \(error.localizedDescription)")
                             } else {
                                 print("🔥 Firestore photoURL saved successfully!")
                             }
-
+                            
                             DispatchQueue.main.async {
                                 self.loadUserData()
                             }
