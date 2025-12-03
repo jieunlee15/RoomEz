@@ -15,11 +15,13 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var emailLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var logoutButton: UIButton!
+    @IBOutlet weak var roomCodeLabel: UILabel!
     
     let rows = ["Edit Profile", "Password", "Notification", "Anonymous"]
     var notificationOn = true
     var anonymousOn = false
     let db = Firestore.firestore()
+    var topBlackView: UIView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,27 +36,52 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadUserData()          // refresh name/photo/email every time
+        loadRoomCode()
         loadSettingsFromFirestore()
     }
     
+    func loadRoomCode() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let userRef = db.collection("users").document(uid)
+        userRef.getDocument { [weak self] snapshot, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Error fetching user data: \(error.localizedDescription)")
+                return
+            }
+
+            var roomText = "No room code"
+            if let data = snapshot?.data(), let roomCode = data["currentRoomCode"] as? String, !roomCode.isEmpty {
+                roomText = "Room Code: \(roomCode)"
+            }
+
+            DispatchQueue.main.async {
+                self.roomCodeLabel.text = roomText
+            }
+        }
+    }
+
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        let topBlackView = UIView()
-        topBlackView.backgroundColor = UIColor(
-            red: 24/255,
-            green: 24/255,
-            blue: 24/255,
-            alpha: 1
-        )
-        topBlackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(topBlackView)
-        view.sendSubviewToBack(topBlackView) // ensures profile image is on top
-        NSLayoutConstraint.activate([
-            topBlackView.topAnchor.constraint(equalTo: view.topAnchor),
-            topBlackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            topBlackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            topBlackView.bottomAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: -23)
-        ])
+        
+        if topBlackView == nil {
+            let viewToAdd = UIView()
+            viewToAdd.backgroundColor = UIColor(red: 24/255, green: 24/255, blue: 24/255, alpha: 1)
+            viewToAdd.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(viewToAdd)
+            view.sendSubviewToBack(viewToAdd)
+            
+            NSLayoutConstraint.activate([
+                viewToAdd.topAnchor.constraint(equalTo: view.topAnchor),
+                viewToAdd.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                viewToAdd.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                viewToAdd.bottomAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: -23)
+            ])
+            topBlackView = viewToAdd
+        }
         
         profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
         profileImageView.clipsToBounds = true
@@ -78,7 +105,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         emailLabel.textAlignment = .center
                 
         logoutButton.setTitle("Log out", for: .normal)
-        logoutButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
         logoutButton.layer.borderWidth = 1
         logoutButton.layer.borderColor = UIColor.black.cgColor
         logoutButton.layer.cornerRadius = 10

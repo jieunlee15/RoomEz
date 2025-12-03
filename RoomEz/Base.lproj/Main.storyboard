@@ -102,7 +102,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P70-17-GaH">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P70-17-GaH">
                                                     <rect key="frame" x="20" y="36" width="245" height="70"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="245" id="bTP-Ag-bEh"/>
@@ -481,6 +481,7 @@
                                     <constraint firstAttribute="width" constant="335" id="BmJ-fh-UNa"/>
                                     <constraint firstAttribute="height" constant="53" id="NOQ-fd-rSW"/>
                                 </constraints>
+                                <color key="tintColor" red="0.094117647060000004" green="0.094117647060000004" blue="0.094117647060000004" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Log Out">
                                     <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="18"/>
@@ -501,10 +502,21 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sLc-Ej-oPa">
+                                <rect key="frame" x="52.666666666666657" y="637" width="335" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="335" id="TBk-Xw-a8o"/>
+                                    <constraint firstAttribute="height" constant="21" id="YyX-qt-DbF"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                                <color key="textColor" red="0.094117647060000004" green="0.094117647060000004" blue="0.094117647060000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Mod-wr-gCb"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="jVt-6z-qBj" firstAttribute="top" secondItem="sLc-Ej-oPa" secondAttribute="bottom" constant="20" id="2NT-In-L7N"/>
                             <constraint firstItem="ruq-WD-TN5" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="5IM-50-gYR"/>
                             <constraint firstItem="Oh6-jN-eQ2" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="5eV-x7-eOw"/>
                             <constraint firstItem="soD-p7-RNq" firstAttribute="leading" secondItem="Mod-wr-gCb" secondAttribute="leading" constant="210" id="HfC-eG-qj8"/>
@@ -515,6 +527,7 @@
                             <constraint firstItem="jVt-6z-qBj" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="axM-Ac-sZ2"/>
                             <constraint firstItem="ruq-WD-TN5" firstAttribute="top" secondItem="2hu-eW-OiP" secondAttribute="bottom" constant="10" id="bFr-Nb-01e"/>
                             <constraint firstItem="Oh6-jN-eQ2" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="dox-4k-5og"/>
+                            <constraint firstItem="sLc-Ej-oPa" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="fxd-Ec-t7O"/>
                             <constraint firstItem="rtw-6o-Duq" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="i64-bN-Vip"/>
                             <constraint firstItem="rtw-6o-Duq" firstAttribute="top" secondItem="Mod-wr-gCb" secondAttribute="top" constant="294" id="k6P-aZ-dPa"/>
                             <constraint firstItem="2hu-eW-OiP" firstAttribute="top" secondItem="Oh6-jN-eQ2" secondAttribute="bottom" constant="16" id="tEb-5w-cqy"/>
@@ -527,6 +540,7 @@
                         <outlet property="logoutButton" destination="jVt-6z-qBj" id="d2h-MB-hW0"/>
                         <outlet property="nameLabel" destination="2hu-eW-OiP" id="2Ld-g1-16K"/>
                         <outlet property="profileImageView" destination="Oh6-jN-eQ2" id="Av8-IP-n3M"/>
+                        <outlet property="roomCodeLabel" destination="sLc-Ej-oPa" id="ssv-l0-3YJ"/>
                         <outlet property="tableView" destination="rtw-6o-Duq" id="e0A-JF-zdH"/>
                     </connections>
                 </viewController>
@@ -2131,7 +2145,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="MJP-CM-tfj"/>
-        <segue reference="AHD-Ch-0eT"/>
+        <segue reference="FnC-Vm-eQy"/>
         <segue reference="G9Z-gY-eNZ"/>
         <segue reference="6AQ-5T-Jqu"/>
     </inferredMetricsTieBreakers>
