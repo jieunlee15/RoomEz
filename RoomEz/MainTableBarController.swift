@@ -1,58 +1,100 @@
 //
-//  MainTableBarController.swift
+//  MainTabBarController.swift
 //  RoomEz
 //
 //  Created by Ananya Singh on 12/4/25.
 //
-//  Handles custom tab bar behavior:
-//  - If the user is not in a room yet, Home/Task/Message all just show
-//    the same "No room yet" screen on the Messages tab.
-//  - Account still works normally so they can manage their profile/log out.
 
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
 class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
     
-    // Flip this to true once the user has joined or created a room.
-    var userHasRoom: Bool = false
+    private let db = Firestore.firestore()
+    private var roomListener: ListenerRegistration?
+    
+    // Flip to true once Firestore says the user is in a room
+    private var userHasRoom: Bool = false {
+        didSet {
+            updateTabBarLockState()
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Want to intercept tab bar selections.
         self.delegate = self
+        observeRoomMembership()
+        updateTabBarLockState()
+    }
+    
+    deinit {
+        roomListener?.remove()
+    }
+    
+    // MARK: - Observe if user is in a room
+    private func observeRoomMembership() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        // If the user doesn’t have a room yet, land them on the Messages tab (index 2), which shows the "No room yet" view.
-        if !userHasRoom {
-            self.selectedIndex = 2
+        roomListener = db.collection("roommateGroups")
+            .whereField("members", arrayContains: uid)
+            .addSnapshotListener { [weak self] snapshot, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    print("Error observing room membership: \(error)")
+                    return
+                }
+                
+                let hasRoom = !(snapshot?.documents.isEmpty ?? true)
+                print("MainTabBarController: userHasRoom = \(hasRoom)")
+                self.userHasRoom = hasRoom
+            }
+    }
+    
+    // MARK: - Lock / unlock tabs based on room status
+    private func updateTabBarLockState() {
+        guard let items = tabBar.items else { return }
+        
+        if userHasRoom {
+            // In a room → all tabs enabled
+            for item in items {
+                item.isEnabled = true
+            }
+        } else {
+            // NOT in a room → only Messages (2) + Profile/Account (3) enabled
+            for (index, item) in items.enumerated() {
+                item.isEnabled = (index == 2 || index == 3)
+            }
+            // Always land on Messages when not in a room
+            if selectedIndex != 2 {
+                selectedIndex = 2
+            }
         }
     }
     
-    // This runs whenever the user taps a tab.
+    // MARK: - Intercept tab selection
     func tabBarController(_ tabBarController: UITabBarController,
                           shouldSelect viewController: UIViewController) -> Bool {
         
-        // Figure out which tab index they tapped.
         guard let vcs = tabBarController.viewControllers,
               let index = vcs.firstIndex(of: viewController) else {
             return true
         }
         
-        // While the user isn’t in a room:
-        // - Block Home (0), Task (1), and Message (2) from switching to other screens
-        // - Always keep them on the Messages tab instead
-        // - Allow Account (3) to work normally
-        if !userHasRoom && index != 3 {
-            tabBarController.selectedIndex = 2   // Messages tab
+        // When NOT in a room → block Home (0) and Tasks (1)
+        if !userHasRoom && !(index == 2 || index == 3) {
+            tabBarController.selectedIndex = 2   // stay on Messages
             return false
         }
         
-        // Once userHasRoom is true, all tabs work like normal.
+        // In a room or choosing Messages/Profile → allow
         return true
     }
     
-    // Call from other view controllers when the user gets a room.
+    // Optional: manual override if you ever want to flip it from other VCs
     func setUserHasRoom(_ hasRoom: Bool) {
-        self.userHasRoom = hasRoom
+        userHasRoom = hasRoom
     }
 }
