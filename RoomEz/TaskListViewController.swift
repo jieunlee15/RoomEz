@@ -1,16 +1,22 @@
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
+
 class DateCell: UICollectionViewCell {
     @IBOutlet weak var dayLabel: UILabel!
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var monthLabel: UILabel!
 }
-class TaskListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout{
+
+class TaskListViewController: UIViewController,
+                              UITableViewDataSource,
+                              UITableViewDelegate,
+                              UICollectionViewDataSource,
+                              UICollectionViewDelegateFlowLayout {
     
     @IBOutlet weak var calendarCollectionView: UICollectionView!
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var segmentControl: UISegmentedControl! // FIXED: should be UISegmentedControl
+    @IBOutlet weak var segmentControl: UISegmentedControl!
     
     private let db = Firestore.firestore()
     private var userID: String?
@@ -25,17 +31,11 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
     
     private var notificationsEnabled = true
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        db.collection("roommateGroups").getDocuments { snap, error in
-            if let error = error { print("Error:", error); return }
-            guard let docs = snap?.documents else { return }
-            
-            for doc in docs {
-                print("DocID: \(doc.documentID), code: \(doc.data()["code"] ?? ""), members: \(doc.data()["members"] ?? [])")
-            }
-        }
-        title = "Task"
+        
+        title = "Tasks"
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -71,7 +71,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         }
     }
     
-    // MARK: - Load Room Data with Member Names
+    // MARK: - Load Room Data
     private func loadUserAndRoomData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         userID = uid
@@ -84,7 +84,10 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
                     print("Error fetching room: \(error)")
                     return
                 }
-                guard let doc = snap?.documents.first else { return }
+                guard let doc = snap?.documents.first else {
+                    print("No room found for user")
+                    return
+                }
                 self.roomCode = doc.documentID
                 self.startListeningToTasks()
             }
@@ -108,7 +111,6 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
                 self.allTasks = docs.compactMap { RoomTask.fromDocument($0.data()) }
                 self.filterTasks()
                 self.tableView.reloadData()
-                
             }
     }
     
@@ -141,7 +143,8 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         return dates.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView,
+                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateCell", for: indexPath) as! DateCell
         let date = dates[indexPath.item]
         
@@ -176,17 +179,19 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    func collectionView(_ collectionView: UICollectionView,
+                        didSelectItemAt indexPath: IndexPath) {
         selectedDate = dates[indexPath.item]
         filterTasks()
         tableView.reloadData()
         collectionView.reloadData()
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 70, height: 80)
     }
-    
     
     // MARK: - Segmented Control
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
@@ -196,31 +201,45 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
     
     func filterTasks() {
         switch segmentControl.selectedSegmentIndex {
-        case 0: filteredTasks = allTasks
-        case 1: filteredTasks = allTasks.filter { $0.status == .todo }
-        case 2: filteredTasks = allTasks.filter { $0.status == .inProgress }
-        case 3: filteredTasks = allTasks.filter { $0.status == .done }
-        default: filteredTasks = allTasks
+        case 0: // All
+            filteredTasks = allTasks
+        case 1: // To Do
+            filteredTasks = allTasks.filter { $0.status == .todo }
+        case 2: // In Progress
+            filteredTasks = allTasks.filter { $0.status == .inProgress }
+        case 3: // Done
+            filteredTasks = allTasks.filter { $0.status == .done }
+        default:
+            filteredTasks = allTasks
         }
         
         if let selected = selectedDate {
             filteredTasks = filteredTasks.filter {
-                guard let due = $0.dueDate else { return true }
+                guard let due = $0.dueDate else { return true } // no due date shows on all days
                 return calendar.isDate(due, inSameDayAs: selected)
             }
         }
+        
+        // (Optional) Sort so overdue tasks float to top
+        filteredTasks.sort { lhs, rhs in
+            let now = Date()
+            let lOver = (lhs.dueDate ?? now) < now && lhs.status != .done
+            let rOver = (rhs.dueDate ?? now) < now && rhs.status != .done
+            if lOver != rOver { return lOver && !rOver }
+            return (lhs.dueDate ?? now) < (rhs.dueDate ?? now)
+        }
     }
-    
     
     // MARK: - Table View
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredTasks.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath) as! TaskCell
         let task = filteredTasks[indexPath.row]
-        cell.configure(with: task)
+        cell.configure(with: task)  // TaskCell should show "Overdue" label when appropriate
         
         cell.onStatusTapped = { [weak self, weak tableView, weak cell] in
             guard let self = self,
@@ -231,9 +250,9 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             var updatedTask = self.filteredTasks[idx.row]
             
             switch updatedTask.status {
-            case .todo: updatedTask.status = .inProgress
+            case .todo:       updatedTask.status = .inProgress
             case .inProgress: updatedTask.status = .done
-            case .done: updatedTask.status = .todo
+            case .done:       updatedTask.status = .todo
             }
             
             self.saveTask(updatedTask)
@@ -245,7 +264,10 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         return cell
     }
     
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+        
         let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, done in
             guard let self = self else { return }
             let taskToDelete = self.filteredTasks[indexPath.row]
@@ -263,26 +285,31 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             done(true)
         }
         edit.backgroundColor = .systemBlue
+        
         return UISwipeActionsConfiguration(actions: [delete, edit])
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView,
+                   didSelectRowAt indexPath: IndexPath) {
         let selectedTask = filteredTasks[indexPath.row]
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let detailVC = storyboard.instantiateViewController(withIdentifier: "TaskDetailViewController") as? TaskDetailViewController {
             detailVC.task = selectedTask
             detailVC.taskIndex = indexPath.row
-            detailVC.currentRoomCode = self.roomCode // 👈 pass the room code
+            detailVC.currentRoomCode = self.roomCode
             navigationController?.pushViewController(detailVC, animated: true)
         }
     }
+    
+    // MARK: - New Task
     @IBAction func addTaskTapped(_ sender: UIBarButtonItem) {
         presentEditor(task: nil)
     }
-            
+    
     private func presentEditor(task: RoomTask?) {
-            performSegue(withIdentifier: "showNewTask", sender: task)
-        }
+        performSegue(withIdentifier: "showNewTask", sender: task)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showNewTask",
            let dest = segue.destination as? NewTaskViewController {
@@ -291,8 +318,10 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         }
     }
     
+    // MARK: - Banner
     func showBanner(message: String) {
         guard notificationsEnabled else { return }
+        
         let bannerHeight: CGFloat = 60
         let banner = UIView()
         banner.backgroundColor = .systemBlue
@@ -301,13 +330,16 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
         banner.layer.shadowOffset = CGSize(width: 0, height: 2)
         banner.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(banner)
+        
         let label = UILabel()
         label.text = message
         label.textColor = .white
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         banner.addSubview(label)
-        let top = banner.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -bannerHeight)
+        
+        let top = banner.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,
+                                              constant: -bannerHeight)
         NSLayoutConstraint.activate([
             banner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             banner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -318,24 +350,37 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
             label.topAnchor.constraint(equalTo: banner.topAnchor),
             label.bottomAnchor.constraint(equalTo: banner.bottomAnchor)
         ])
+        
         view.layoutIfNeeded()
         top.constant = 16
-        UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0.4, options: [], animations: {
+        
+        UIView.animate(withDuration: 0.45,
+                       delay: 0,
+                       usingSpringWithDamping: 0.85,
+                       initialSpringVelocity: 0.4,
+                       options: [],
+                       animations: {
             self.view.layoutIfNeeded()
         })
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             UIView.animate(withDuration: 0.25, animations: {
-                banner.transform = CGAffineTransform(translationX: 0, y: -bannerHeight - 20)
+                banner.transform = CGAffineTransform(translationX: 0,
+                                                     y: -bannerHeight - 20)
                 banner.alpha = 0
-            }, completion: { _ in banner.removeFromSuperview() })
+            }, completion: { _ in
+                banner.removeFromSuperview()
+            })
         }
     }
 }
+
 // MARK: - NewTaskDelegate
 extension TaskListViewController: NewTaskDelegate {
     func didCreateTask(_ task: RoomTask) {
         saveTask(task)
     }
+    
     func didUpdateTask(_ task: RoomTask, at index: Int) {
         saveTask(task)
     }

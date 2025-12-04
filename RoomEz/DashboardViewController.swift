@@ -22,16 +22,15 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     private var roomCode: String?
     private var userID: String?
     
-    // Live listener
     private var tasksListener: ListenerRegistration?
 
     // MARK: - Data
     private var allTasks: [RoomTask] = []
     private var filteredTasks: [RoomTask] {
-        allTasks.filter { $0.status != .done }  // only show uncompleted
+        allTasks.filter { $0.status != .done }
     }
 
-    // MARK: - Life Cycle
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -50,6 +49,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
+        profileImageView.clipsToBounds = true
     }
 
     deinit {
@@ -63,13 +63,12 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         tableView.rowHeight = 110
         tableView.estimatedRowHeight = 110
         
-        let lineView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 0.5))
+        let lineView = UIView(frame: CGRect(x: 0,y: 0, width: tableView.bounds.width, height: 0.5))
         lineView.backgroundColor = UIColor.separator
         tableView.tableHeaderView = lineView
         
         profileImageView.image = UIImage(systemName: "person.crop.circle")
         profileImageView.tintColor = .gray
-        profileImageView.clipsToBounds = true
         profileImageView.contentMode = .scaleAspectFill
     }
 
@@ -82,16 +81,17 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             guard let self = self else { return }
             let data = snap?.data() ?? [:]
             
-            // Greeting
             let name = data["firstName"] as? String ?? "there"
             self.greetingLabel.text = "Hello \(name)!"
             
-            // Profile picture
             if let base64 = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64),
                let img = UIImage(data: imageData) {
                 self.profileImageView.image = img
                 self.profileImageView.tintColor = .clear
+            } else {
+                self.profileImageView.image = UIImage(systemName: "person.crop.circle")
+                self.profileImageView.tintColor = .gray
             }
         }
     }
@@ -103,8 +103,12 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             .whereField("members", arrayContains: uid)
             .getDocuments { [weak self] snap, error in
                 guard let self = self else { return }
+                if let error = error {
+                    print("Error fetching room for dashboard: \(error)")
+                    return
+                }
                 guard let doc = snap?.documents.first else {
-                    print("❌ No room for this user")
+                    print("No room for this user")
                     return
                 }
                 
@@ -123,10 +127,13 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             .order(by: "createdAt", descending: false)
             .addSnapshotListener { [weak self] snap, error in
                 guard let self = self else { return }
+                if let error = error {
+                    print("Error fetching dashboard tasks: \(error)")
+                    return
+                }
                 guard let docs = snap?.documents else { return }
                 
                 self.allTasks = docs.compactMap { RoomTask.fromDocument($0.data()) }
-                
                 self.tableView.reloadData()
                 self.updateProgress()
             }
@@ -134,8 +141,10 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
 
     // MARK: - Circular Progress
     func setupCircularProgress() {
-        let center = CGPoint(x: progressContainer.bounds.midX, y: progressContainer.bounds.midY)
-        let radius = min(progressContainer.bounds.width, progressContainer.bounds.height) / 2.5
+        let center = CGPoint(x: progressContainer.bounds.midX,
+                             y: progressContainer.bounds.midY)
+        let radius = min(progressContainer.bounds.width,
+                         progressContainer.bounds.height) / 2.5
         
         let path = UIBezierPath(
             arcCenter: center,
@@ -179,10 +188,14 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         progressLabel.text = "\(Int(ratio * 100))%"
         
         switch ratio {
-        case 0: messageLabel.text = "Let's get started together!"
-        case 0..<0.85: messageLabel.text = "Nice teamwork — we're getting there!"
-        case 0.85..<1: messageLabel.text = "Almost done — just a few more steps!"
-        default: messageLabel.text = "All done! Great job, everyone!"
+        case 0:
+            messageLabel.text = "Let's get started together!"
+        case 0..<0.85:
+            messageLabel.text = "Nice teamwork — we're getting there!"
+        case 0.85..<1:
+            messageLabel.text = "Almost done — just a few more steps!"
+        default:
+            messageLabel.text = "All done! Great job, everyone!"
         }
     }
 
@@ -194,7 +207,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toTaskTabBar",
            let tab = segue.destination as? UITabBarController {
-            tab.selectedIndex = 1
+            tab.selectedIndex = 1   // Tasks tab
         }
     }
 
@@ -203,19 +216,23 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         return filteredTasks.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as? TaskCell else {
-            return UITableViewCell()
+            return UITableViewCell(style: .default, reuseIdentifier: "FallbackCell")
         }
         
         let task = filteredTasks[indexPath.row]
-        cell.configure(with: task)
+        cell.configure(with: task)   // TaskCell should show overdue label here too
         
-        // Status tap
-        cell.onStatusTapped = { [weak self] in
-            guard let self = self else { return }
-            let task = self.filteredTasks[indexPath.row]
+        cell.onStatusTapped = { [weak self, weak tableView, weak cell] in
+            guard let self = self,
+                  let tableView = tableView,
+                  let cell = cell,
+                  let tappedIndexPath = tableView.indexPath(for: cell) else { return }
+            
+            let task = self.filteredTasks[tappedIndexPath.row]
             self.toggleTaskStatus(task)
         }
         
@@ -228,14 +245,13 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         var updated = task
         
         switch task.status {
-        case .todo: updated.status = .inProgress
+        case .todo:       updated.status = .inProgress
         case .inProgress: updated.status = .done
-        case .done: updated.status = .todo
+        case .done:       updated.status = .todo
         }
-
+        
         db.collection("rooms").document(code).collection("tasks")
             .document(task.id.uuidString)
             .setData(updated.toDictionary(), merge: true)
     }
 }
-

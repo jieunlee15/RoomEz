@@ -1,11 +1,13 @@
 import UIKit
 import FirebaseFirestore
 import FirebaseAuth
+
 protocol NewTaskDelegate: AnyObject {
     func didCreateTask(_ task: RoomTask)
     func didUpdateTask(_ task: RoomTask, at index: Int)
 }
-class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate {
+
+class NewTaskViewController: UIViewController,UIPickerViewDataSource,UIPickerViewDelegate, UITextFieldDelegate {
     
     @IBOutlet weak var titleField: UITextField!
     @IBOutlet weak var assigneePicker: UIPickerView!
@@ -16,16 +18,13 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
     weak var delegate: NewTaskDelegate?
     var editingTask: RoomTask?
     
-    // Firestore
     private let db = Firestore.firestore()
     private var roomCode: String?
     
-    // Dynamic roommates list
     var roommates: [String] = ["Unassigned"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("💡 NewTaskViewController loaded. Current room code: \(String(describing: roomCode))")
         
         title = editingTask == nil ? "New Task" : "Edit Task"
         
@@ -34,44 +33,43 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         
         dueDatePicker.datePickerMode = .dateAndTime
         dueDatePicker.preferredDatePickerStyle = .compact
+        dueDatePicker.minimumDate = Date()
         
         descriptionView.delegate = self
+        descriptionView.placeholder = "Add details..."
+        
         dueDatePicker.isHidden = !dueDateSwitch.isOn
         
         loadRoommates()
         setupEditingData()
     }
     
-    // MARK: - Load Roommates from Firestore
     private func loadRoommates() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
+        
         db.collection("roommateGroups")
             .whereField("members", arrayContains: uid)
-            .getDocuments { [weak self] snap, error in
+            .getDocuments { [weak self] snapshot, error in
                 guard let self = self else { return }
-                if let error = error {
-                    print("Error fetching roommate groups: \(error)")
-                    return
-                }
-                guard let doc = snap?.documents.first else { return }
+                guard let doc = snapshot?.documents.first else { return }
+                
                 self.roomCode = doc.documentID
-                guard let membersUIDs = doc.data()["members"] as? [String] else { return }
-                // Reset roommates list with "Unassigned"
+                guard let memberUIDs = doc.data()["members"] as? [String] else { return }
+                
                 self.roommates = ["Unassigned"]
-                // Fetch all first names
+                
                 let group = DispatchGroup()
-                for memberUID in membersUIDs {
+                
+                for memberUID in memberUIDs {
                     group.enter()
-                    self.db.collection("users").document(memberUID).getDocument { snap, error in
-                        defer { group.leave() }
-                        if let firstName = snap?.data()?["firstName"] as? String {
-                            self.roommates.append(firstName)
-                        } else {
-                            print("Warning: No firstName for UID \(memberUID)")
+                    self.db.collection("users").document(memberUID).getDocument { snap, _ in
+                        if let first = snap?.data()?["firstName"] as? String {
+                            self.roommates.append(first)
                         }
+                        group.leave()
                     }
                 }
-                // Only reload picker when all first names are fetched
+                
                 group.notify(queue: .main) {
                     self.assigneePicker.reloadAllComponents()
                     self.selectEditingAssignee()
@@ -80,46 +78,91 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
     }
     
     private func setupEditingData() {
-        guard let t = editingTask else { return }
-        titleField.text = t.title
-        dueDateSwitch.isOn = t.dueDate != nil
-        dueDatePicker.isHidden = t.dueDate == nil
-        if let d = t.dueDate { dueDatePicker.date = d }
-        descriptionView.text = t.details
+        guard let task = editingTask else { return }
+        
+        titleField.text = task.title
+        
+        if let due = task.dueDate {
+            dueDateSwitch.isOn = true
+            dueDatePicker.isHidden = false
+            dueDatePicker.date = due
+        } else {
+            dueDateSwitch.isOn = false
+            dueDatePicker.isHidden = true
+        }
+        
+        dueDatePicker.minimumDate = Date()
+        
+        if let details = task.details, !details.trimmingCharacters(in: .whitespaces).isEmpty {
+            descriptionView.text = details
+        } else {
+            descriptionView.text = nil
+            descriptionView.placeholder = "Add details..."
+        }
     }
     
     private func selectEditingAssignee() {
-        guard let t = editingTask, let assignee = t.assignee,
+        guard let task = editingTask,
+              let assignee = task.assignee,
               let index = roommates.firstIndex(of: assignee) else { return }
+        
         assigneePicker.selectRow(index, inComponent: 0, animated: false)
     }
     
-    // MARK: - Picker
-    func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int { roommates.count }
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? { roommates[row] }
+    func numberOfComponents(in pickerView: UIPickerView) -> Int { return 1 }
+    
+    func pickerView(_ pickerView: UIPickerView,
+                    numberOfRowsInComponent component: Int) -> Int {
+        return roommates.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView,
+                    titleForRow row: Int,
+                    forComponent component: Int) -> String? {
+        return roommates[row]
+    }
     
     @IBAction func dueDateSwitchChanged(_ sender: UISwitch) {
         dueDatePicker.isHidden = !sender.isOn
+        if sender.isOn {
+            dueDatePicker.minimumDate = Date()
+        }
     }
     
     @IBAction func saveTapped(_ sender: Any) {
-        // 1️⃣ Get and validate the task title
         let titleText = titleField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        guard !titleText.isEmpty else {
-            let alert = UIAlertController(title: "Missing Title", message: "Enter a task title.", preferredStyle: .alert)
+        
+        if titleText.isEmpty {
+            let alert = UIAlertController(title: "Missing Title",
+                                          message: "Enter a task title.",
+                                          preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
             return
         }
         
-        let assigneeSelection = roommates[assigneePicker.selectedRow(inComponent: 0)]
-        let assigneeValue = assigneeSelection == "Unassigned" ? nil : assigneeSelection
-        let dueValue = dueDateSwitch.isOn ? dueDatePicker.date : nil
-        let details = descriptionView.text?.isEmpty ?? true ? nil : descriptionView.text
+        let selectedAssignee = roommates[assigneePicker.selectedRow(inComponent: 0)]
+        let assigneeValue = selectedAssignee == "Unassigned" ? nil : selectedAssignee
+        
+        var dueValue: Date? = nil
+        if dueDateSwitch.isOn {
+            let picked = dueDatePicker.date
+            if picked < Date() {
+                let alert = UIAlertController(title: "Invalid Due Date",
+                                              message: "The due date must be in the future.",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(alert, animated: true)
+                return
+            }
+            dueValue = picked
+        }
+        
+        let rawDetails = descriptionView.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let details = rawDetails.isEmpty ? nil : rawDetails
         
         if let task = editingTask {
-            let updatedTask = RoomTask(
+            let updated = RoomTask(
                 id: task.id,
                 title: titleText,
                 details: details,
@@ -128,7 +171,7 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
                 status: task.status,
                 createdAt: task.createdAt
             )
-            delegate?.didUpdateTask(updatedTask, at: 0)
+            delegate?.didUpdateTask(updated, at: 0)
         } else {
             let newTask = RoomTask(
                 title: titleText,
@@ -143,20 +186,13 @@ class NewTaskViewController: UIViewController, UIPickerViewDataSource, UIPickerV
         
         navigationController?.popViewController(animated: true)
     }
-}
-        // MARK: - UITextViewDelegate
-extension NewTaskViewController: UITextViewDelegate {
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.text == "Add details..." {
-            textView.text = ""
-            textView.textColor = .label
-        }
-    }
     
-    func textViewDidEndEditing(_ textView: UITextView) {
-        if textView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            textView.text = "Add details..."
-            textView.textColor = .placeholderText
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == titleField {
+            descriptionView.becomeFirstResponder()
+        } else {
+            textField.resignFirstResponder()
         }
+        return true
     }
 }
