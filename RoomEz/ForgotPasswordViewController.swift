@@ -1,39 +1,70 @@
 //  ForgotPasswordViewController.swift
 //  RoomEz
+//
 //  Created by Ananya Singh on 11/11/25.
+//
 
 import UIKit
 import FirebaseAuth
-import FirebaseFirestore
 
 class ForgotPasswordViewController: UIViewController {
 
     @IBOutlet weak var emailField: UITextField!
-    let db = Firestore.firestore()
+    @IBOutlet weak var errorLabel: UILabel!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Clear any previous error/success messages when the view loads
+        errorLabel.text = "Please enter the email address associated with your account"
+        errorLabel.textColor = .systemRed
+    }
 
     @IBAction func sendCodeTapped(_ sender: UIButton) {
-        // later: call Firebase password reset here
-        guard let email = emailField.text, !email.isEmpty else { return }
+        
+        // Clear old messages every time the user taps the button
+        errorLabel.text = ""
 
-        // Generate 6-digit code
-        let code = String(Int.random(in: 100000...999999))
+        // Make sure the user actually entered an email
+        guard let email = emailField.text, !email.isEmpty else {
+            showError("Please enter your email.")
+            return
+        }
 
-        // Save to Firestore
-        db.collection("passwordResetCodes").document(email).setData(["code": code, "createdAt": Date()])
-
-        // Print for testing (pretend this was emailed)
-        print("Reset code for \(email): \(code)")
-        performSegue(withIdentifier: "goToVerification", sender: self)
+        // Use Firebase’s built-in password reset function — sends the user a secure email link
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            
+            if let error = error {
+                // Something went wrong — show the error directly on the screen
+                self.showError(error.localizedDescription)
+            } else {
+                // Email sent successfully — show confirmation in green
+                self.showSuccess("If an account exists for this email, a reset link has been sent.")
+                
+                /*
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.navigationController?.popViewController(animated: true)
+                }
+                */
+            }
+        }
     }
 
-    /*
-    // MARK: - Navigation
+    // MARK: - Helper methods to show feedback
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    // Shows red error text in the label
+    private func showError(_ message: String) {
+        DispatchQueue.main.async {
+            self.errorLabel.textColor = .systemRed
+            self.errorLabel.text = message
+        }
     }
-    */
 
+    // Shows green success text in the label
+    private func showSuccess(_ message: String) {
+        DispatchQueue.main.async {
+            self.errorLabel.textColor = .systemGreen
+            self.errorLabel.text = message
+        }
+    }
 }

@@ -993,6 +993,7 @@
                     <navigationItem key="navigationItem" id="qVm-Dq-Gum"/>
                     <connections>
                         <outlet property="emailField" destination="lbZ-rx-lmC" id="cEH-Y4-k4Z"/>
+                        <outlet property="errorLabel" destination="lFm-ad-RbO" id="mSB-gl-PHx"/>
                         <segue destination="5Rr-mR-ymG" kind="show" identifier="goToVerification" id="t77-uT-Apv"/>
                     </connections>
                 </viewController>
