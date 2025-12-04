@@ -5,9 +5,7 @@
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
-
 class DashboardViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
     // MARK: - Outlets (connect in storyboard)
     @IBOutlet weak var greetingLabel: UILabel!
     @IBOutlet weak var messageLabel: UILabel!
@@ -32,8 +30,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     // User info cache
     private var firstName: String?
     private var roomCode: String?
-
-
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -48,10 +44,8 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         
         profileImageView.image = UIImage(systemName: "person.crop.circle")
         profileImageView.tintColor = .gray
-
         profileImageView.layer.masksToBounds = true
         profileImageView.contentMode = .scaleAspectFill
-
         
         setupCircularProgress()
         fetchUserData()
@@ -73,21 +67,17 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     
     private func fetchUserData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-
         let userRef = db.collection("users").document(uid)
         userRef.getDocument { [weak self] snapshot, error in
             guard let self = self else { return }
-
             if error != nil {
                 print("Dashboard: Error fetching user data")
                 return
             }
-
             guard let data = snapshot?.data() else {
                 print("Dashboard: No user data found")
                 return
             }
-
             // Load greeting
             if let firstName = data["firstName"] as? String {
                 DispatchQueue.main.async {
@@ -98,12 +88,10 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                     self.greetingLabel.text = "Hello!"
                 }
             }
-
             // Load Base64 profile image
             if let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
                let image = UIImage(data: imageData) {
-
                 DispatchQueue.main.async {
                     self.profileImageView.image = image
                     self.profileImageView.tintColor = .clear
@@ -116,13 +104,11 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             }
         }
     }
-
     
     private func setupTaskObservation() {
             // You can use Combine or NotificationCenter to observe changes
             // For simplicity, we'll update when the view appears and when tasks change
         }
-
     @IBAction func detailPressed(_ sender: Any) {
         self.performSegue(withIdentifier: "toTaskTabBar", sender: self)
     }
@@ -132,9 +118,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             tabBar.selectedIndex = 1  // 0 = first tab, change as needed
         }
     }
-
     
-
 // MARK: - Circular Progress Setup
     func setupCircularProgress() {
         let center = CGPoint(x: progressContainer.bounds.midX, y: progressContainer.bounds.midY)
@@ -144,7 +128,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                                           startAngle: -.pi / 2,
                                           endAngle: 1.5 * .pi,
                                           clockwise: true)
-
             // Track (gray background circle)
         trackLayer.path = circlePath.cgPath
         trackLayer.fillColor = UIColor.clear.cgColor
@@ -152,7 +135,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         trackLayer.lineWidth = 10
         trackLayer.lineCap = .round
         progressContainer.layer.addSublayer(trackLayer)
-
             // Progress (colored arc)
         progressLayer.path = circlePath.cgPath
         progressLayer.fillColor = UIColor.clear.cgColor
@@ -162,7 +144,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         progressLayer.strokeEnd = 0
         progressContainer.layer.addSublayer(progressLayer)
     }
-
     func updateProgress() {
         let tasks = taskManager.tasks
         guard !tasks.isEmpty else {
@@ -171,15 +152,12 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             messageLabel.text = "Let's get started together!"
             return
         }
-
         let completed = tasks.filter { $0.status == .done }.count
         let ratio = CGFloat(completed) / CGFloat(tasks.count)
-
         UIView.animate(withDuration: 0.5) {
             self.progressLayer.strokeEnd = ratio
         }
         progressLabel.text = "\(Int(ratio * 100))%"
-
         switch ratio {
         case 0:
             messageLabel.text = "Let's get started together!"
@@ -191,11 +169,9 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             messageLabel.text = "All done! Great job, everyone!"
         }
     }
-
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredTasks.count
     }
-
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as? TaskCell else {
             // fallback — make sure you never crash
@@ -242,8 +218,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         }
         return cell
     }
-
-
     private func formattedDate(_ date: Date?) -> String {
         guard let date = date else { return "" }
         let formatter = DateFormatter()
@@ -251,7 +225,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         return formatter.string(from: date)
     }
     
-
     func showBanner(message: String) {
         let bannerHeight: CGFloat = 60
         let banner = UIView()
@@ -295,4 +268,3 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         }
     }
 }
-
