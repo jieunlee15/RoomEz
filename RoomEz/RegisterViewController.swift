@@ -1,6 +1,4 @@
-//  RegisterViewController.swift
-//  RoomEz
-//  Created by Ananya Singh on 10/20/25.
+
 
 import UIKit
 import FirebaseAuth
@@ -17,15 +15,31 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var confirmPasswordText: UITextField!
     @IBOutlet weak var registerButton: UIButton!
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         registerButton.layer.cornerRadius = 10
-        registerButton.clipsToBounds = true
-        errorMessage.textColor = .systemRed
-        errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
+        errorMessage.textColor = .systemRed
+        errorMessage.font = .systemFont(ofSize: 14, weight: .medium)
     }
     
+    
+    // MARK: - Navigate to Main Tab Bar
+    func goToMainTabs(userHasRoom: Bool) {
+        guard let tabBar = storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController else { return }
+
+        tabBar.setUserHasRoom(userHasRoom)
+        tabBar.selectedIndex = 2
+        
+        // FIX: Present modally exactly like your OG login flow did
+        tabBar.modalPresentationStyle = .fullScreen
+        self.present(tabBar, animated: true, completion: nil)
+    }
+    
+    
+    // MARK: - Register User
     @IBAction func registerButtonPressed(_ sender: Any) {
         guard let fName = firstName.text, !fName.isEmpty,
               let lName = lastName.text, !lName.isEmpty,
@@ -41,8 +55,8 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        // Create the account
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
+        // Create account
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -52,7 +66,7 @@ class RegisterViewController: UIViewController {
             
             self.errorMessage.text = ""
             
-            // Make sure session is fully initialized → sign in again explicitly
+            // Auto-login to ensure full session init
             Auth.auth().signIn(withEmail: email, password: password) { result, error in
                 if let error = error {
                     self.errorMessage.text = "Login failed: \(error.localizedDescription)"
@@ -62,12 +76,12 @@ class RegisterViewController: UIViewController {
                 guard let user = result?.user else { return }
                 let displayName = "\(fName) \(lName)"
                 
-                // Update displayName in Firebase Auth
+                // Update Auth Profile
                 let changeRequest = user.createProfileChangeRequest()
                 changeRequest.displayName = displayName
                 changeRequest.commitChanges(completion: nil)
                 
-                // Save Firestore user document
+                // Save Firestore doc
                 let userData: [String: Any] = [
                     "firstName": fName,
                     "lastName": lName,
@@ -80,29 +94,10 @@ class RegisterViewController: UIViewController {
                     "createdAt": Timestamp()
                 ]
                 
-                Firestore.firestore().collection("users").document(user.uid)
-                    .setData(userData) { error in
-                        if let error = error {
-                            print("Error saving user: \(error.localizedDescription)")
-                        } else {
-                            print("User successfully saved to Firestore!")
-                        }
-                    }
+                Firestore.firestore().collection("users").document(user.uid).setData(userData)
                 
-                // Send them straight to the Main Tab Bar → Messages tab
-                DispatchQueue.main.async {
-                    if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController {
-                        
-                        // New users do NOT have a room yet
-                        tabBar.setUserHasRoom(false)
-                        
-                        // Land on the Messages tab
-                        tabBar.selectedIndex = 2
-                        
-                        // Replace the current stack
-                        self.navigationController?.setViewControllers([tabBar], animated: true)
-                    }
-                }
+                // Navigate to app
+                self.goToMainTabs(userHasRoom: false)
             }
         }
     }

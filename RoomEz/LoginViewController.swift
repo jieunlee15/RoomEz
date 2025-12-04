@@ -1,6 +1,7 @@
+//
 //  LoginViewController.swift
 //  RoomEz
-//  Created by Ananya Singh on 10/20/25.
+//
 
 import UIKit
 import FirebaseAuth
@@ -15,42 +16,43 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         loginButton.layer.cornerRadius = 10
-        loginButton.clipsToBounds = true
-        errorMessage.textColor = .systemRed
-        errorMessage.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         errorMessage.text = ""
+        errorMessage.textColor = .systemRed
+        errorMessage.font = .systemFont(ofSize: 14, weight: .medium)
     }
     
     
+    func goToMainTabs(userHasRoom: Bool) {
+        guard let tabBar = storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController else { return }
+
+        tabBar.setUserHasRoom(userHasRoom)
+        tabBar.selectedIndex = 2
+        
+        // FIX: Present modally exactly like your OG login flow did
+        tabBar.modalPresentationStyle = .fullScreen
+        self.present(tabBar, animated: true, completion: nil)
+    }
+
     @IBAction func loginButtonPressed(_ sender: Any) {
         guard let email = emailText.text, !email.isEmpty,
               let password = passwordText.text, !password.isEmpty else {
             errorMessage.text = "Please enter both email and password."
             return
         }
+
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
             
-            if let error = error as NSError? {
+            if let error = error {
                 self.errorMessage.text = error.localizedDescription
-            } else {
-                self.errorMessage.text = ""
-                
-                // Move to the next screen (e.g. home screen)
-                self.performSegue(withIdentifier: "toMessageLog", sender: self)
+                return
             }
+
+            self.errorMessage.text = ""
+            self.goToMainTabs(userHasRoom: false)
         }
     }
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "toMessageLog" {
-            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController {
-                // At this point the user just logged in / registered,
-                // so they probably don't have a room yet.
-                tabBar.setUserHasRoom(false)
-                tabBar.selectedIndex = 2   // Messages tab with "No room yet"
-                self.navigationController?.setViewControllers([tabBar], animated: true)
-            }
-            }
-        }
-    }
+}
+

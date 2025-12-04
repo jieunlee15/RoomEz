@@ -44,6 +44,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateProgress()
+        fetchUserData()
     }
 
     override func viewDidLayoutSubviews() {

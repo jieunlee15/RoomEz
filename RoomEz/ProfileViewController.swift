@@ -354,7 +354,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             try Auth.auth().signOut()
             UserDefaults.standard.removeObject(forKey: "currentRoomCode")
             
-            // Load LoginViewController as NEW root
             if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
                 
                 guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
@@ -362,11 +361,18 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
                     return
                 }
                 
-                window.rootViewController = loginVC
+                // Wrap Login inside a Navigation Controller
+                let navController = UINavigationController(rootViewController: loginVC)
+                navController.modalPresentationStyle = .fullScreen
+                
+                window.rootViewController = navController
+                
                 UIView.transition(with: window, duration: 0.3,
                                   options: .transitionFlipFromLeft,
-                                  animations: nil, completion: nil)
+                                  animations: nil,
+                                  completion: nil)
             }
+            
         } catch {
             print("Error signing out: \(error.localizedDescription)")
         }
