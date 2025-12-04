@@ -1,9 +1,5 @@
-//  TaskDetailViewController.swift
-//  RoomEz
-//  Created by Jieun Lee on 11/10/25.
-
 import UIKit
-
+import FirebaseFirestore
 class TaskDetailViewController: UIViewController {
     
     // MARK: - Outlets
@@ -15,6 +11,8 @@ class TaskDetailViewController: UIViewController {
     
     var task: RoomTask!
     var taskIndex: Int?
+    var currentRoomCode: String? // Pass this from TaskListVC
+    private let db = Firestore.firestore()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,22 +55,30 @@ class TaskDetailViewController: UIViewController {
     }
     
     @IBAction func markAsFinishedTapped(_ sender: UIButton) {
-        switch task.status {
-        case .todo, .inProgress:
-            let alert = UIAlertController(title: nil, message: "Confirm to mark it as finished?", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
-                self.task.status = .done
-                if let index = self.taskIndex {
-                    TaskManager.shared.updateTask(self.task, at: index)
+        guard task.status != .done, let roomCode = currentRoomCode else { return }
+        
+        let alert = UIAlertController(title: nil, message: "Confirm to mark as finished?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Confirm", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.task.status = .done
+            self.task.updatedAt = Date()
+            
+            // Update Firestore
+            self.db.collection("rooms").document(roomCode)
+                .collection("tasks").document(self.task.id.uuidString)
+                .setData(self.task.toDictionary()) { error in
+                    if let error = error {
+                        print("Error updating task: \(error)")
+                    } else {
+                        // Optionally update TaskManager locally
+                        if let index = self.taskIndex {
+                            TaskManager.shared.updateTask(self.task, at: index)
+                        }
+                        self.configureView()
+                    }
                 }
-                self.configureView()
-            })
-            present(alert, animated: true)
-        case .done:
-            // Already completed
-            dismiss(animated: true)
-        }
+        })
+        present(alert, animated: true)
     }
 }
-
