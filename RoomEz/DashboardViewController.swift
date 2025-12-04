@@ -1,12 +1,10 @@
-//  DashboardViewController.swift
-//  RoomEz
-//  Created by Jieun Lee on 11/7/25.
-
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
+
 class DashboardViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    // MARK: - Outlets (connect in storyboard)
+
+    // MARK: - Outlets
     @IBOutlet weak var greetingLabel: UILabel!
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var progressLabel: UILabel!
@@ -15,256 +13,228 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var detailButton: UIButton!
     @IBOutlet weak var profileImageView: UIImageView!
     
+    // MARK: - Layers
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
     
-    private var taskManager = TaskManager.shared
-    // Filtered array: only uncompleted tasks
-    private var filteredTasks: [RoomTask] {
-        taskManager.tasks.filter { $0.status != .done }
-    }
-    
-    // Firestore reference
+    // MARK: - Firestore
     private let db = Firestore.firestore()
-    
-    // User info cache
-    private var firstName: String?
     private var roomCode: String?
+    private var userID: String?
+    
+    // Live listener
+    private var tasksListener: ListenerRegistration?
+
+    // MARK: - Data
+    private var allTasks: [RoomTask] = []
+    private var filteredTasks: [RoomTask] {
+        allTasks.filter { $0.status != .done }  // only show uncompleted
+    }
+
+    // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let lineView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 0.5))
-        lineView.backgroundColor = UIColor.separator
-        tableView.tableHeaderView = lineView
-        
+        setupTable()
+        setupCircularProgress()
+        fetchUserData()
+        loadUserAndRoomData()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateProgress()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
+    }
+
+    deinit {
+        tasksListener?.remove()
+    }
+
+    // MARK: - UI Setup
+    private func setupTable() {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = 110
         tableView.estimatedRowHeight = 110
         
+        let lineView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 0.5))
+        lineView.backgroundColor = UIColor.separator
+        tableView.tableHeaderView = lineView
+        
         profileImageView.image = UIImage(systemName: "person.crop.circle")
         profileImageView.tintColor = .gray
-        profileImageView.layer.masksToBounds = true
-        profileImageView.contentMode = .scaleAspectFill
-        
-        setupCircularProgress()
-        fetchUserData()
-        setupTaskObservation()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-          super.viewWillAppear(animated)
-          updateProgress()
-          tableView.reloadData()
-          fetchUserData()
-      }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
         profileImageView.clipsToBounds = true
+        profileImageView.contentMode = .scaleAspectFill
     }
-    
+
+    // MARK: - Fetch User + Room
     private func fetchUserData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        let userRef = db.collection("users").document(uid)
-        userRef.getDocument { [weak self] snapshot, error in
+        userID = uid
+        
+        db.collection("users").document(uid).getDocument { [weak self] snap, _ in
             guard let self = self else { return }
-            if error != nil {
-                print("Dashboard: Error fetching user data")
-                return
-            }
-            guard let data = snapshot?.data() else {
-                print("Dashboard: No user data found")
-                return
-            }
-            // Load greeting
-            if let firstName = data["firstName"] as? String {
-                DispatchQueue.main.async {
-                    self.greetingLabel.text = "Hello \(firstName)!"
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.greetingLabel.text = "Hello!"
-                }
-            }
-            // Load Base64 profile image
-            if let base64String = data["profileImageBase64"] as? String,
-               let imageData = Data(base64Encoded: base64String),
-               let image = UIImage(data: imageData) {
-                DispatchQueue.main.async {
-                    self.profileImageView.image = image
-                    self.profileImageView.tintColor = .clear
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.profileImageView.image = UIImage(systemName: "person.crop.circle")
-                    self.profileImageView.tintColor = .gray
-                }
+            let data = snap?.data() ?? [:]
+            
+            // Greeting
+            let name = data["firstName"] as? String ?? "there"
+            self.greetingLabel.text = "Hello \(name)!"
+            
+            // Profile picture
+            if let base64 = data["profileImageBase64"] as? String,
+               let imageData = Data(base64Encoded: base64),
+               let img = UIImage(data: imageData) {
+                self.profileImageView.image = img
+                self.profileImageView.tintColor = .clear
             }
         }
     }
     
-    private func setupTaskObservation() {
-            // You can use Combine or NotificationCenter to observe changes
-            // For simplicity, we'll update when the view appears and when tasks change
-        }
-    @IBAction func detailPressed(_ sender: Any) {
-        self.performSegue(withIdentifier: "toTaskTabBar", sender: self)
+    private func loadUserAndRoomData() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        db.collection("roommateGroups")
+            .whereField("members", arrayContains: uid)
+            .getDocuments { [weak self] snap, error in
+                guard let self = self else { return }
+                guard let doc = snap?.documents.first else {
+                    print("❌ No room for this user")
+                    return
+                }
+                
+                self.roomCode = doc.documentID
+                self.startListeningToTasks()
+            }
     }
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "toTaskTabBar" {
-            let tabBar = segue.destination as! UITabBarController
-            tabBar.selectedIndex = 1  // 0 = first tab, change as needed
-        }
+
+    // MARK: - Listen to Firestore Tasks
+    private func startListeningToTasks() {
+        guard let code = roomCode else { return }
+        
+        tasksListener?.remove()
+        
+        tasksListener = db.collection("rooms").document(code).collection("tasks")
+            .order(by: "createdAt", descending: false)
+            .addSnapshotListener { [weak self] snap, error in
+                guard let self = self else { return }
+                guard let docs = snap?.documents else { return }
+                
+                self.allTasks = docs.compactMap { RoomTask.fromDocument($0.data()) }
+                
+                self.tableView.reloadData()
+                self.updateProgress()
+            }
     }
-    
-// MARK: - Circular Progress Setup
+
+    // MARK: - Circular Progress
     func setupCircularProgress() {
         let center = CGPoint(x: progressContainer.bounds.midX, y: progressContainer.bounds.midY)
         let radius = min(progressContainer.bounds.width, progressContainer.bounds.height) / 2.5
-        let circlePath = UIBezierPath(arcCenter: center,
-                                          radius: radius,
-                                          startAngle: -.pi / 2,
-                                          endAngle: 1.5 * .pi,
-                                          clockwise: true)
-            // Track (gray background circle)
-        trackLayer.path = circlePath.cgPath
-        trackLayer.fillColor = UIColor.clear.cgColor
+        
+        let path = UIBezierPath(
+            arcCenter: center,
+            radius: radius,
+            startAngle: -.pi / 2,
+            endAngle: 1.5 * .pi,
+            clockwise: true
+        )
+        
+        trackLayer.path = path.cgPath
         trackLayer.strokeColor = UIColor.systemGray5.cgColor
         trackLayer.lineWidth = 10
+        trackLayer.fillColor = UIColor.clear.cgColor
         trackLayer.lineCap = .round
         progressContainer.layer.addSublayer(trackLayer)
-            // Progress (colored arc)
-        progressLayer.path = circlePath.cgPath
-        progressLayer.fillColor = UIColor.clear.cgColor
+        
+        progressLayer.path = path.cgPath
         progressLayer.strokeColor = UIColor.black.cgColor
         progressLayer.lineWidth = 10
+        progressLayer.fillColor = UIColor.clear.cgColor
         progressLayer.lineCap = .round
         progressLayer.strokeEnd = 0
         progressContainer.layer.addSublayer(progressLayer)
     }
+
     func updateProgress() {
-        let tasks = taskManager.tasks
-        guard !tasks.isEmpty else {
+        guard !allTasks.isEmpty else {
             progressLayer.strokeEnd = 0
             progressLabel.text = "0%"
             messageLabel.text = "Let's get started together!"
             return
         }
-        let completed = tasks.filter { $0.status == .done }.count
-        let ratio = CGFloat(completed) / CGFloat(tasks.count)
-        UIView.animate(withDuration: 0.5) {
+        
+        let done = allTasks.filter { $0.status == .done }.count
+        let ratio = CGFloat(done) / CGFloat(allTasks.count)
+        
+        UIView.animate(withDuration: 0.4) {
             self.progressLayer.strokeEnd = ratio
         }
+        
         progressLabel.text = "\(Int(ratio * 100))%"
+        
         switch ratio {
-        case 0:
-            messageLabel.text = "Let's get started together!"
-        case 0..<0.85:
-            messageLabel.text = "Nice teamwork — we're getting there!"
-        case 0.85..<1.0:
-            messageLabel.text = "Almost done — just a few more steps!"
-        default:
-            messageLabel.text = "All done! Great job, everyone!"
+        case 0: messageLabel.text = "Let's get started together!"
+        case 0..<0.85: messageLabel.text = "Nice teamwork — we're getting there!"
+        case 0.85..<1: messageLabel.text = "Almost done — just a few more steps!"
+        default: messageLabel.text = "All done! Great job, everyone!"
         }
     }
+
+    // MARK: - Segue to Task Tab
+    @IBAction func detailPressed(_ sender: Any) {
+        performSegue(withIdentifier: "toTaskTabBar", sender: nil)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "toTaskTabBar",
+           let tab = segue.destination as? UITabBarController {
+            tab.selectedIndex = 1
+        }
+    }
+
+    // MARK: - TableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredTasks.count
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as? TaskCell else {
-            // fallback — make sure you never crash
-            return UITableViewCell(style: .default, reuseIdentifier: "FallbackCell")
+            return UITableViewCell()
         }
+        
         let task = filteredTasks[indexPath.row]
         cell.configure(with: task)
-        cell.onStatusTapped = { [weak self, weak tableView, weak cell] in
-            guard
-                let self = self,
-                let tableView = tableView,
-                let cell = cell,
-                let tappedIndexPath = tableView.indexPath(for: cell)
-            else { return }
-            
-            let task = self.filteredTasks[tappedIndexPath.row]
-            
-            if let originalIndex = self.taskManager.tasks.firstIndex(where: { $0.id == task.id }) {
-                var updatedTask = task
-                // Cycle through the three states
-                switch updatedTask.status {
-                case .todo:
-                    updatedTask.status = .inProgress
-                case .inProgress:
-                    updatedTask.status = .done
-                case .done:
-                    updatedTask.status = .todo
-                }
-                self.taskManager.updateTask(updatedTask, at: originalIndex)
-                
-                // Show banner message based on the *new* status
-                switch updatedTask.status {
-                case .todo:
-                    self.showBanner(message: "Task started")
-                case .inProgress:
-                    self.showBanner(message: "Task marked in progress")
-                case .done:
-                    self.showBanner(message: "Task completed")
-                }
-            }
-            
-            tableView.reloadData()
-            self.updateProgress()
+        
+        // Status tap
+        cell.onStatusTapped = { [weak self] in
+            guard let self = self else { return }
+            let task = self.filteredTasks[indexPath.row]
+            self.toggleTaskStatus(task)
         }
+        
         return cell
     }
-    private func formattedDate(_ date: Date?) -> String {
-        guard let date = date else { return "" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: date)
-    }
-    
-    func showBanner(message: String) {
-        let bannerHeight: CGFloat = 60
-        let banner = UIView()
-        banner.backgroundColor = .systemBlue
-        banner.layer.cornerRadius = 12
-        banner.layer.shadowOpacity = 0.3
-        banner.layer.shadowOffset = CGSize(width: 0, height: 2)
-        banner.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(banner)
+
+    private func toggleTaskStatus(_ task: RoomTask) {
+        guard let code = roomCode else { return }
+
+        var updated = task
         
-        let label = UILabel()
-        label.text = message
-        label.textColor = .white
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        banner.addSubview(label)
-        
-        let top = banner.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -bannerHeight)
-        NSLayoutConstraint.activate([
-            banner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            banner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            banner.heightAnchor.constraint(equalToConstant: bannerHeight),
-            top,
-            label.leadingAnchor.constraint(equalTo: banner.leadingAnchor, constant: 12),
-            label.trailingAnchor.constraint(equalTo: banner.trailingAnchor, constant: -12),
-            label.topAnchor.constraint(equalTo: banner.topAnchor),
-            label.bottomAnchor.constraint(equalTo: banner.bottomAnchor)
-        ])
-        view.layoutIfNeeded()
-        
-        top.constant = 16
-        UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0.4, options: [], animations: {
-            self.view.layoutIfNeeded()
-        })
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
-            UIView.animate(withDuration: 0.25, animations: {
-                banner.transform = CGAffineTransform(translationX: 0, y: -bannerHeight - 20)
-                banner.alpha = 0
-            }, completion: { _ in banner.removeFromSuperview() })
+        switch task.status {
+        case .todo: updated.status = .inProgress
+        case .inProgress: updated.status = .done
+        case .done: updated.status = .todo
         }
+
+        db.collection("rooms").document(code).collection("tasks")
+            .document(task.id.uuidString)
+            .setData(updated.toDictionary(), merge: true)
     }
 }
+
