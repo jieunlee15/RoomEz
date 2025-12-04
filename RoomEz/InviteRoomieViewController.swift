@@ -7,14 +7,15 @@ import FirebaseFirestore
 import FirebaseAuth
 
 class InviteRoomieViewController: UIViewController {
-    
     @IBOutlet weak var generatedCodeLabel: UITextField!
     let db = Firestore.firestore()
+    private var generatedCode: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         let newCode = generateRandomCode()
         generatedCodeLabel.text = newCode
+        generatedCode = newCode
         createRoomInFirestore(code: newCode)
     }
 
@@ -24,40 +25,31 @@ class InviteRoomieViewController: UIViewController {
     }
 
     @IBAction func copyCodeTapped(_ sender: UIButton) {
-        if let code = generatedCodeLabel.text {
-            UIPasteboard.general.string = code
-            let alert = UIAlertController(title: "Copied",
-                message: "Roommate code copied to clipboard.",
-                preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.present(alert, animated: true)
-        }
+        guard let code = generatedCode else { return }
+        UIPasteboard.general.string = code
+        let alert = UIAlertController(title: "Copied",
+                                      message: "Roommate code copied to clipboard.",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
-    func createRoomInFirestore(code: String) {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+    private func createRoomInFirestore(code: String) {
         let roomRef = db.collection("roommateGroups").document(code)
-
         roomRef.setData([
             "code": code,
-            "members": [uid],
+            "members": [], // optional: leave empty if you don't want creator automatically a member
             "createdAt": Timestamp()
-        ]) { [weak self] error in
-            guard let self = self else { return }
+        ]) { error in
             if let error = error {
                 print("Error creating room: \(error.localizedDescription)")
-                // optionally show an alert
-                return
-            }
-            print("Room created with code: \(code)")
-
-            // Save the room code only after successful creation
-            Firestore.firestore().collection("users").document(uid).updateData(["currentRoomCode": code])
-            if let tabBar = self.tabBarController as? MainTabBarController {
-                tabBar.setUserHasRoom(true)
+            } else {
+                print("Room created: \(code)")
+                // DO NOT write currentRoomCode here!
             }
         }
     }
 }
+
 
 
