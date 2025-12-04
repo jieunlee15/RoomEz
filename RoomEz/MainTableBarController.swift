@@ -14,7 +14,7 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
     private let db = Firestore.firestore()
     private var roomListener: ListenerRegistration?
     
-    // Flip to true once Firestore says the user is in a room
+    // Controls lock state + initial landing tab
     private var userHasRoom: Bool = false {
         didSet {
             updateTabBarLockState()
@@ -26,14 +26,13 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
         
         self.delegate = self
         observeRoomMembership()
-        updateTabBarLockState()
     }
     
     deinit {
         roomListener?.remove()
     }
     
-    // MARK: - Observe if user is in a room
+    // MARK: - Listen for whether the user is in a room
     private func observeRoomMembership() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
@@ -53,23 +52,30 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
             }
     }
     
-    // MARK: - Lock / unlock tabs based on room status
+    // MARK: - Lock / unlock tabs and choose which tab to show
     private func updateTabBarLockState() {
         guard let items = tabBar.items else { return }
         
         if userHasRoom {
-            // In a room → all tabs enabled
+            // User is in a room → unlock everything
             for item in items {
                 item.isEnabled = true
             }
+            
+            // After login / app launch: send them to Home
+            // (Only do this if they're not already on Home)
+            if selectedIndex != 0 {
+                selectedIndex = 0   // Home tab
+            }
         } else {
-            // NOT in a room → only Messages (2) + Profile/Account (3) enabled
+            // User is NOT in a room → only allow Messages + Profile
             for (index, item) in items.enumerated() {
                 item.isEnabled = (index == 2 || index == 3)
             }
-            // Always land on Messages when not in a room
+            
+            // Always keep them on Messages when no room
             if selectedIndex != 2 {
-                selectedIndex = 2
+                selectedIndex = 2   // Messages tab
             }
         }
     }
@@ -89,11 +95,11 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
             return false
         }
         
-        // In a room or choosing Messages/Profile → allow
+        // In a room or selecting Messages/Profile → allow
         return true
     }
     
-    // Optional: manual override if you ever want to flip it from other VCs
+    // Optional manual override if you ever need it
     func setUserHasRoom(_ hasRoom: Bool) {
         userHasRoom = hasRoom
     }
