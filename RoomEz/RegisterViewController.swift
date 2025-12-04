@@ -81,10 +81,13 @@ class RegisterViewController: UIViewController {
             }
             
             // Go directly to main tab bar (Messages tab) instead of login
-            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? UITabBarController {
-                tabBar.selectedIndex = 2 // Messages tab
+            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController {
+                // At this point the user just logged in / registered,
+                // so they probably don't have a room yet.
+                tabBar.setUserHasRoom(false)
+                tabBar.selectedIndex = 2   // Messages tab with "No room yet"
                 self.navigationController?.setViewControllers([tabBar], animated: true)
+            }
             }
         }
     }
-}

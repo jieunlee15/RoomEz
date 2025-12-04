@@ -53,6 +53,9 @@ class InviteRoomieViewController: UIViewController {
 
             // Save the room code only after successful creation
             Firestore.firestore().collection("users").document(uid).updateData(["currentRoomCode": code])
+            if let tabBar = self.tabBarController as? MainTabBarController {
+                tabBar.setUserHasRoom(true)
+            }
         }
     }
 }

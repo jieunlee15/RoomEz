@@ -44,9 +44,13 @@ class LoginViewController: UIViewController {
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toMessageLog" {
-            if let tabBar = segue.destination as? UITabBarController {
-                tabBar.selectedIndex = 2  
+            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController {
+                // At this point the user just logged in / registered,
+                // so they probably don't have a room yet.
+                tabBar.setUserHasRoom(false)
+                tabBar.selectedIndex = 2   // Messages tab with "No room yet"
+                self.navigationController?.setViewControllers([tabBar], animated: true)
+            }
             }
         }
     }
-}
