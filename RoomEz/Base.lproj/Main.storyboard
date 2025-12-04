@@ -1298,7 +1298,7 @@
                         <outlet property="firstName" destination="2oG-i9-op9" id="0wg-hp-hOr"/>
                         <outlet property="lastName" destination="Flz-5h-rqo" id="biG-Bo-Fsw"/>
                         <outlet property="passwordText" destination="egB-F2-TuN" id="ucg-a3-LQW"/>
-                        <outlet property="registerButton" destination="90z-4b-d4w" id="zgd-Jz-zB3"/>
+                        <outlet property="registerButton" destination="90z-4b-d4w" id="kp3-va-Z68"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="m6K-15-28N" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

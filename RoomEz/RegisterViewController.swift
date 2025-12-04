@@ -41,9 +41,10 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self]
-            authResult, error in
+        // Create the account
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
+            
             if let error = error {
                 self.errorMessage.text = error.localizedDescription
                 return
@@ -51,43 +52,58 @@ class RegisterViewController: UIViewController {
             
             self.errorMessage.text = ""
             
-            guard let user = authResult?.user else { return }
-            let displayName = "\(fName) \(lName)"
-            
-            // Update Auth display name
-            let changeRequest = user.createProfileChangeRequest()
-            changeRequest.displayName = displayName
-            changeRequest.commitChanges { _ in }
-            
-            // Prepare Firestore user data
-            let userData: [String: Any] = [
-                "firstName": fName,
-                "lastName": lName,
-                "displayName": displayName,
-                "email": email,
-                "photoURL": "",           // empty initially
-                "notificationOn": true,
-                "anonymousOn": false,
-                "currentRoomCode": "",
-                "createdAt": Timestamp()
-            ]
-            
-            Firestore.firestore().collection("users").document(user.uid).setData(userData) { error in
+            // Make sure session is fully initialized → sign in again explicitly
+            Auth.auth().signIn(withEmail: email, password: password) { result, error in
                 if let error = error {
-                    print("Error saving user: \(error.localizedDescription)")
-                } else {
-                    print("User successfully saved to Firestore!")
+                    self.errorMessage.text = "Login failed: \(error.localizedDescription)"
+                    return
                 }
-            }
-            
-            // Go directly to main tab bar (Messages tab) instead of login
-            if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController {
-                // At this point the user just logged in / registered,
-                // so they probably don't have a room yet.
-                tabBar.setUserHasRoom(false)
-                tabBar.selectedIndex = 2   // Messages tab with "No room yet"
-                self.navigationController?.setViewControllers([tabBar], animated: true)
-            }
+                
+                guard let user = result?.user else { return }
+                let displayName = "\(fName) \(lName)"
+                
+                // Update displayName in Firebase Auth
+                let changeRequest = user.createProfileChangeRequest()
+                changeRequest.displayName = displayName
+                changeRequest.commitChanges(completion: nil)
+                
+                // Save Firestore user document
+                let userData: [String: Any] = [
+                    "firstName": fName,
+                    "lastName": lName,
+                    "displayName": displayName,
+                    "email": email,
+                    "photoURL": "",
+                    "notificationOn": true,
+                    "anonymousOn": false,
+                    "currentRoomCode": "",
+                    "createdAt": Timestamp()
+                ]
+                
+                Firestore.firestore().collection("users").document(user.uid)
+                    .setData(userData) { error in
+                        if let error = error {
+                            print("Error saving user: \(error.localizedDescription)")
+                        } else {
+                            print("User successfully saved to Firestore!")
+                        }
+                    }
+                
+                // Send them straight to the Main Tab Bar → Messages tab
+                DispatchQueue.main.async {
+                    if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController {
+                        
+                        // New users do NOT have a room yet
+                        tabBar.setUserHasRoom(false)
+                        
+                        // Land on the Messages tab
+                        tabBar.selectedIndex = 2
+                        
+                        // Replace the current stack
+                        self.navigationController?.setViewControllers([tabBar], animated: true)
+                    }
+                }
             }
         }
     }
+}
