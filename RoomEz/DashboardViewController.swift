@@ -201,15 +201,10 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
 
     // MARK: - Segue to Task Tab
     @IBAction func detailPressed(_ sender: Any) {
-        performSegue(withIdentifier: "toTaskTabBar", sender: nil)
+        // Jump to the Tasks tab
+        self.tabBarController?.selectedIndex = 1
     }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "toTaskTabBar",
-           let tab = segue.destination as? UITabBarController {
-            tab.selectedIndex = 1   // Tasks tab
-        }
-    }
+
 
     // MARK: - TableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
