@@ -686,7 +686,7 @@
                                 <color key="textColor" red="0.50588235290000005" green="0.50588235290000005" blue="0.50588235290000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gPF-3a-sub">
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gPF-3a-sub">
                                 <rect key="frame" x="47.666666666666657" y="220" width="345" height="41"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="41" id="6x7-s3-A2P"/>
@@ -1314,10 +1314,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="JNp-IV-wfF">
-                                <rect key="frame" x="20" y="130" width="316" height="68"/>
+                                <rect key="frame" x="20" y="130" width="400" height="68"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Task" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zrc-PO-Cfh">
-                                        <rect key="frame" x="0.0" y="0.0" width="316" height="19"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="400" height="19"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="19" id="Cct-is-R3h"/>
                                             <constraint firstAttribute="width" constant="316" id="rxb-5v-B0T"/>
@@ -1327,7 +1327,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Task Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="1As-Y5-ZW9">
-                                        <rect key="frame" x="0.0" y="27" width="316" height="41"/>
+                                        <rect key="frame" x="0.0" y="27" width="400" height="41"/>
                                         <color key="tintColor" red="0.094117648900000003" green="0.094117648900000003" blue="0.094117648900000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="316" id="7kt-Wn-XkO"/>
@@ -1344,7 +1344,7 @@
                                 </constraints>
                             </stackView>
                             <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lPR-4L-3zx">
-                                <rect key="frame" x="18" y="330" width="320" height="216"/>
+                                <rect key="frame" x="60" y="330" width="320" height="216"/>
                                 <color key="tintColor" red="0.094117648900000003" green="0.094117648900000003" blue="0.094117648900000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <outlet property="dataSource" destination="1s8-Bg-kfh" id="zWg-dN-Q9C"/>
@@ -1375,7 +1375,7 @@
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xnd-0b-v1D">
-                                <rect key="frame" x="10.666666666666657" y="722" width="335" height="53"/>
+                                <rect key="frame" x="52.666666666666657" y="722" width="335" height="53"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="HLE-vc-uIn"/>
                                     <constraint firstAttribute="width" constant="335" id="QFp-hF-wqL"/>
