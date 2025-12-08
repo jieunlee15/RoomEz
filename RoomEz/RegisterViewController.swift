@@ -17,6 +17,7 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         
         registerButton.clipsToBounds = true
         errorMessage.text = ""
