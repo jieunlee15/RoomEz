@@ -153,6 +153,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             endAngle: 1.5 * .pi,
             clockwise: true
         )
+        progressLabel.textColor = UIColor(hex: "#305B9D")
         
         trackLayer.path = path.cgPath
         trackLayer.strokeColor = UIColor.systemGray5.cgColor
@@ -162,7 +163,7 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         progressContainer.layer.addSublayer(trackLayer)
         
         progressLayer.path = path.cgPath
-        progressLayer.strokeColor = UIColor.black.cgColor
+        progressLayer.strokeColor = UIColor(hex: "#305B9D").cgColor
         progressLayer.lineWidth = 10
         progressLayer.fillColor = UIColor.clear.cgColor
         progressLayer.lineCap = .round

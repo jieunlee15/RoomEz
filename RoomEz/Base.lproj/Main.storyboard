@@ -1767,8 +1767,12 @@
                                     <constraint firstAttribute="width" constant="335" id="AJx-X7-1I7"/>
                                     <constraint firstAttribute="height" constant="53" id="mo2-Rr-REf"/>
                                 </constraints>
+                                <color key="tintColor" red="0.30980392159999998" green="0.60784313729999995" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Mark As Finished">
+                                <buttonConfiguration key="configuration" style="plain" title="Mark As Done">
+                                    <backgroundConfiguration key="background" cornerRadius="10" strokeWidth="2">
+                                        <color key="strokeColor" red="0.30980392159999998" green="0.60784313729999995" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </backgroundConfiguration>
                                     <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="18"/>
                                 </buttonConfiguration>
                                 <connections>
