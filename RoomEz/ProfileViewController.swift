@@ -225,19 +225,43 @@ class ProfileViewController: UIViewController,
         
         switch selected {
         case "Edit Profile":
-            break
+            // Push EditProfileViewController
+            guard let storyboard = self.storyboard,
+                  let editVC = storyboard.instantiateViewController(
+                    withIdentifier: "EditProfileViewController"
+                  ) as? EditProfileViewController
+            else { return }
+            
+            // Split name label into first / last (best effort)
+            let fullName = nameLabel.text ?? ""
+            let parts = fullName.split(separator: " ")
+            if let first = parts.first {
+                editVC.currentFirstName = String(first)
+            }
+            if parts.count > 1 {
+                let last = parts.dropFirst().joined(separator: " ")
+                editVC.currentLastName = last
+            }
+            
+            editVC.currentEmail = emailLabel.text
+            
+            navigationController?.pushViewController(editVC, animated: true)
+            
         case "Password":
             presentTextInputAlert(title: "Change Password",
                                   placeholder: "New Password",
                                   isSecure: true) { pw in
                 self.updateFirebasePassword(pw)
             }
+            
         case "Leave Room":
             presentLeaveRoomAlert()
+            
         default:
             break
         }
     }
+
     
     // MARK: - Leave Room
     

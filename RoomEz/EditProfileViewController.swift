@@ -10,12 +10,10 @@ import FirebaseAuth
 import FirebaseFirestore
 
 class EditProfileViewController: UIViewController {
-    
     @IBOutlet weak var firstNameTextField: UITextField!
-    @IBOutlet weak var lastNameTextField: UITextField!
-    @IBOutlet weak var emailTextField: UITextField!
-    @IBOutlet weak var saveButton: UIButton!
-    
+@IBOutlet weak var lastNameTextField: UITextField!
+@IBOutlet weak var emailTextField: UITextField!
+@IBOutlet weak var saveButton: UIButton!
     // Values passed in from ProfileViewController
     var currentFirstName: String?
     var currentLastName: String?

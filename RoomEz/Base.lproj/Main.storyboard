@@ -415,7 +415,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="87C-Ci-Itk" kind="show" identifier="toEditProfile" id="tCh-xy-4VV"/>
+                                            <segue destination="87C-Ci-Itk" kind="show" identifier="toEditProfile" id="Bmn-t4-kSN"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFit" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="passwordCell" rowHeight="44" id="Reo-Xq-bdQ">
@@ -628,7 +628,7 @@
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </buttonConfiguration>
                                 <connections>
-                                    <action selector="saveButtonPressed:" destination="87C-Ci-Itk" eventType="touchUpInside" id="3ZE-o7-jyp"/>
+                                    <action selector="saveButtonPressed:" destination="87C-Ci-Itk" eventType="touchUpInside" id="p0g-Gq-5W2"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -637,10 +637,10 @@
                     </view>
                     <navigationItem key="navigationItem" id="1Nz-IY-41B"/>
                     <connections>
-                        <outlet property="emailTextField" destination="6a6-5Y-ZuX" id="Sps-1u-GFB"/>
-                        <outlet property="firstNameTextField" destination="ngs-Ld-o2W" id="Glx-sf-Dxr"/>
-                        <outlet property="lastNameTextField" destination="Dko-Fz-CNk" id="yQt-wz-o2s"/>
-                        <outlet property="saveButton" destination="y9g-mX-g14" id="UaE-Id-v9B"/>
+                        <outlet property="emailTextField" destination="6a6-5Y-ZuX" id="WPL-JP-sJk"/>
+                        <outlet property="firstNameTextField" destination="ngs-Ld-o2W" id="Ypm-GB-XEa"/>
+                        <outlet property="lastNameTextField" destination="Dko-Fz-CNk" id="CFP-U2-r55"/>
+                        <outlet property="saveButton" destination="y9g-mX-g14" id="XAL-TW-2K8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZhV-Vg-pkr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2133,6 +2133,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
+        <segue reference="t77-uT-Apv"/>
         <segue reference="MJP-CM-tfj"/>
         <segue reference="Laa-Wu-5vK"/>
     </inferredMetricsTieBreakers>
