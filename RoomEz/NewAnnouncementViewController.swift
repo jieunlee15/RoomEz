@@ -25,6 +25,7 @@ class NewAnnouncementViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         
         titleField.layer.borderWidth = 1.0
         titleField.layer.borderColor = UIColor(

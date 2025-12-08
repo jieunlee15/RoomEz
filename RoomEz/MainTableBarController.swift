@@ -10,6 +10,21 @@ import FirebaseAuth
 import FirebaseFirestore
 
 class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
+    var roomCode: String? {
+        didSet {
+            propagateRoomCodeToChildren()
+        }
+    }
+
+    private func propagateRoomCodeToChildren() {
+        for vc in viewControllers ?? [] {
+            if let nav = vc as? UINavigationController,
+               let annVC = nav.viewControllers.first as? AnnouncementViewController {
+                annVC.setRoomCode(roomCode)
+            }
+        }
+    }
+
     
     private let db = Firestore.firestore()
     private var roomListener: ListenerRegistration?

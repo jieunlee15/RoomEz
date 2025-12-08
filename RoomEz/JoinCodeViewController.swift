@@ -42,13 +42,14 @@ class JoinCodeViewController: UIViewController {
     private func redirectToHome(with roomCode: String) {
         guard let tabBar = self.tabBarController as? MainTabBarController else { return }
         tabBar.setUserHasRoom(true)
+        tabBar.roomCode = roomCode
         tabBar.selectedIndex = 0 // Dashboard
         // Set messages tab to announcements
-        if let nav = tabBar.viewControllers?[2] as? UINavigationController,
-           let annVC = storyboard?.instantiateViewController(withIdentifier: "MessagesVC") as? AnnouncementViewController {
-            annVC.setRoomCode(roomCode)
-            nav.setViewControllers([annVC], animated: false)
-        }
+//        if let nav = tabBar.viewControllers?[2] as? UINavigationController,
+//           let annVC = storyboard?.instantiateViewController(withIdentifier: "MessagesVC") as? AnnouncementViewController {
+//            annVC.setRoomCode(roomCode)
+//            nav.setViewControllers([annVC], animated: false)
+//        }
     }
     func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)

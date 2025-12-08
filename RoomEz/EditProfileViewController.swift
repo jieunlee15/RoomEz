@@ -23,6 +23,7 @@ class EditProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         
         title = "Edit Profile"
         
