@@ -31,7 +31,15 @@ class EditProfileViewController: UIViewController {
         emailTextField.text = currentEmail
         emailTextField.isEnabled = false   // email read-only for now
         
-        saveButton.layer.cornerRadius = 10
+        firstNameTextField.text = currentFirstName
+        lastNameTextField.text = currentLastName
+        emailTextField.text = currentEmail
+        emailTextField.isEnabled = false   // email read-only for now
+        
+        // Make text black
+        firstNameTextField.textColor = .black
+        lastNameTextField.textColor = .black
+        emailTextField.textColor = .black
         saveButton.clipsToBounds = true
     }
     
