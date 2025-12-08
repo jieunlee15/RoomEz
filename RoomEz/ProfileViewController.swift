@@ -3,7 +3,6 @@
 //  RoomEz
 //  Created by Shriya Venkataraman on 11/11/25.
 //
-
 import UIKit
 import FirebaseAuth
 import FirebaseStorage
@@ -23,9 +22,9 @@ class ProfileViewController: UIViewController,
     @IBOutlet weak var logoutButton: UIButton!
     @IBOutlet weak var roomCodeLabel: UILabel!
     
-    let rows = ["Edit Profile", "Password", "Notification", "Anonymous"]
+    let rows = ["Edit Profile", "Password", "Notification", "Leave Room"]
     var notificationOn = true
-    var anonymousOn = false
+    
     let db = Firestore.firestore()
     var topBlackView: UIView?
     
@@ -39,6 +38,7 @@ class ProfileViewController: UIViewController,
         tableView.rowHeight = 44
         tableView.tableFooterView = UIView()
         tableView.separatorInset = .zero
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "OptionCell")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -47,34 +47,6 @@ class ProfileViewController: UIViewController,
         loadRoomCode()
         loadSettingsFromFirestore()
     }
-    
-    // MARK: - Room Code
-    
-    func loadRoomCode() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        
-        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
-            guard let self = self else { return }
-            
-            if let error = error {
-                print("Error fetching user data: \(error.localizedDescription)")
-                return
-            }
-            
-            var roomText = "No room code"
-            if let data = snapshot?.data(),
-               let roomCode = data["currentRoomCode"] as? String,
-               !roomCode.isEmpty {
-                roomText = "Room Code: \(roomCode)"
-            }
-            
-            DispatchQueue.main.async {
-                self.roomCodeLabel.text = roomText
-            }
-        }
-    }
-    
-    // MARK: - Layout / UI
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -106,19 +78,38 @@ class ProfileViewController: UIViewController,
     
     private func setupUI() {
         profileImageView.contentMode = .scaleAspectFill
-        
         nameLabel.font = UIFont.boldSystemFont(ofSize: 24)
         nameLabel.textAlignment = .center
-        
         emailLabel.font = UIFont.systemFont(ofSize: 16)
         emailLabel.textColor = .secondaryLabel
         emailLabel.textAlignment = .center
-        
-        logoutButton.setTitle("Log out", for: .normal)
-        logoutButton.layer.borderWidth = 1
-        logoutButton.layer.borderColor = UIColor.black.cgColor
-        logoutButton.layer.cornerRadius = 10
         logoutButton.clipsToBounds = true
+    }
+    
+    // MARK: - Room Code
+    
+    func loadRoomCode() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("Error fetching user data: \(error.localizedDescription)")
+                return
+            }
+            
+            var roomText = "No room code"
+            if let data = snapshot?.data(),
+               let roomCode = data["currentRoomCode"] as? String,
+               !roomCode.isEmpty {
+                roomText = "Room Code: \(roomCode)"
+            }
+            
+            DispatchQueue.main.async {
+                self.roomCodeLabel.text = roomText
+            }
+        }
     }
     
     // MARK: - Load User Data
@@ -132,7 +123,6 @@ class ProfileViewController: UIViewController,
             return
         }
         
-        // Defaults from Auth
         nameLabel.text = user.displayName ?? "User"
         emailLabel.text = user.email
         
@@ -149,7 +139,6 @@ class ProfileViewController: UIViewController,
                 return
             }
             
-            // Prefer Firestore first/last if present
             if let firstName = data["firstName"] as? String {
                 var fullName = firstName
                 if let lastName = data["lastName"] as? String, !lastName.isEmpty {
@@ -160,7 +149,6 @@ class ProfileViewController: UIViewController,
                 }
             }
             
-            // Load profile image if present
             if let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
                let profileImage = UIImage(data: imageData) {
@@ -183,13 +171,12 @@ class ProfileViewController: UIViewController,
         db.collection("users").document(uid).getDocument { snapshot, _ in
             if let data = snapshot?.data() {
                 self.notificationOn = data["notificationOn"] as? Bool ?? true
-                self.anonymousOn = data["anonymousOn"] as? Bool ?? false
                 self.tableView.reloadData()
             }
         }
     }
     
-    // MARK: - TableView Data Source
+    // MARK: - TableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         rows.count
@@ -197,121 +184,190 @@ class ProfileViewController: UIViewController,
     
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let rowTitle = rows[indexPath.row]
-        let cellIdentifier: String
-        
-        switch rowTitle {
-        case "Edit Profile": cellIdentifier = "profileCell"
-        case "Password": cellIdentifier = "passwordCell"
-        case "Notification": cellIdentifier = "notificationCell"
-        case "Anonymous": cellIdentifier = "anonymousCell"
-        default: cellIdentifier = "OptionCell"
-        }
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier,
-                                                 for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "OptionCell", for: indexPath)
         cell.textLabel?.text = rowTitle
         cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         
-        if rowTitle == "Notification" || rowTitle == "Anonymous" {
-            let toggleSwitch = UISwitch()
-            toggleSwitch.isOn = (rowTitle == "Notification") ? notificationOn : anonymousOn
-            toggleSwitch.tag = indexPath.row
-            toggleSwitch.addTarget(self,
-                                   action: #selector(switchChanged(_:)),
-                                   for: .valueChanged)
-            toggleSwitch.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+        if rowTitle == "Notification" {
+            let toggle = UISwitch()
+            toggle.isOn = notificationOn
+            toggle.tag = indexPath.row
+            toggle.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
+            toggle.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
             
             let container = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
-            container.addSubview(toggleSwitch)
-            toggleSwitch.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(toggle)
+            toggle.translatesAutoresizingMaskIntoConstraints = false
+            
             NSLayoutConstraint.activate([
-                toggleSwitch.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-                toggleSwitch.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+                toggle.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+                toggle.centerYAnchor.constraint(equalTo: container.centerYAnchor)
             ])
+            
             cell.accessoryView = container
             cell.selectionStyle = .none
+            
         } else {
             cell.accessoryView = nil
             cell.accessoryType = .disclosureIndicator
             cell.selectionStyle = .default
         }
+        
         return cell
     }
     
-    // MARK: - TableView Delegate
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView,
+                   didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selected = rows[indexPath.row]
-
+        
         switch selected {
         case "Edit Profile":
-            // Do nothing here – storyboard segue from the cell will fire
-            break
+            // Push EditProfileViewController
+            guard let storyboard = self.storyboard,
+                  let editVC = storyboard.instantiateViewController(
+                    withIdentifier: "EditProfileViewController"
+                  ) as? EditProfileViewController
+            else { return }
+            
+            // Split name label into first / last (best effort)
+            let fullName = nameLabel.text ?? ""
+            let parts = fullName.split(separator: " ")
+            if let first = parts.first {
+                editVC.currentFirstName = String(first)
+            }
+            if parts.count > 1 {
+                let last = parts.dropFirst().joined(separator: " ")
+                editVC.currentLastName = last
+            }
+            
+            editVC.currentEmail = emailLabel.text
+            
+            navigationController?.pushViewController(editVC, animated: true)
+            
         case "Password":
             presentTextInputAlert(title: "Change Password",
-                                  placeholder: "Enter new password",
-                                  isSecure: true) { newPassword in
-                self.updateFirebasePassword(newPassword)
+                                  placeholder: "New Password",
+                                  isSecure: true) { pw in
+                self.updateFirebasePassword(pw)
             }
+            
+        case "Leave Room":
+            presentLeaveRoomAlert()
+            
         default:
             break
         }
     }
+
     
-    // MARK: - Pass data to EditProfileViewController
+    // MARK: - Leave Room
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "toEditProfile",
-           let dest = segue.destination as? EditProfileViewController {
+    func presentLeaveRoomAlert() {
+        let alert = UIAlertController(
+            title: "Leave Room",
+            message: "Are you sure you want to leave this room? You will be logged out immediately.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Leave", style: .destructive) { _ in
+            self.leaveRoom()
+        })
+        present(alert, animated: true)
+    }
+    
+    private func leaveRoom() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        db.collection("roommateGroups")
+            .whereField("members", arrayContains: uid)
+            .getDocuments { [weak self] snapshot, error in
+                guard let self = self else { return }
+                snapshot?.documents.forEach { doc in
+                    doc.reference.updateData(["members": FieldValue.arrayRemove([uid])])
+                }
+                
+                // Clear Firestore room
+                self.db.collection("users").document(uid).setData([
+                    "currentRoomCode": ""
+                ], merge: true)
+                
+                // Clear local room
+                UserDefaults.standard.removeObject(forKey: "currentRoomCode")
+                
+                // Disable Home & Tasks tabs
+                self.updateTabBarItems(disableFirstTwo: true)
+                
+                // Log out
+                self.logoutUser()
+            }
+    }
+    
+    // MARK: - Logout
+    
+    @IBAction func logoutPressed(_ sender: UIButton) {
+        logoutUser()
+    }
+    
+    private func logoutUser() {
+        // Clear local room code only, Firestore room intact
+        UserDefaults.standard.removeObject(forKey: "currentRoomCode")
+        
+        do {
+            try Auth.auth().signOut()
             
-            let fullName = nameLabel.text ?? ""
-            let parts = fullName.split(separator: " ")
-            
-            let first = parts.first.map(String.init) ?? ""
-            let last = parts.count > 1 ? parts.dropFirst().joined(separator: " ") : ""
-            
-            dest.currentFirstName = first
-            dest.currentLastName = last
-            dest.currentEmail = emailLabel.text
+            if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
+                let navController = UINavigationController(rootViewController: loginVC)
+                navController.modalPresentationStyle = .fullScreen
+                view.window?.rootViewController = navController
+                view.window?.makeKeyAndVisible()
+            }
+        } catch {
+            print("Error signing out: \(error.localizedDescription)")
         }
     }
+    
+    private func updateTabBarItems(disableFirstTwo: Bool) {
+        if let tabBar = self.tabBarController {
+            for (index, item) in (tabBar.tabBar.items ?? []).enumerated() {
+                item.isEnabled = !disableFirstTwo || index >= 2
+            }
+            tabBar.selectedIndex = 2
+        }
+    }
+    
+    // MARK: - Switch
     
     @objc func switchChanged(_ sender: UISwitch) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        let rowTitle = rows[sender.tag]
         
-        if rowTitle == "Notification" {
-            notificationOn = sender.isOn
-            db.collection("users").document(uid)
-                .setData(["notificationOn": notificationOn], merge: true)
-        } else if rowTitle == "Anonymous" {
-            anonymousOn = sender.isOn
-            db.collection("users").document(uid)
-                .setData(["anonymousOn": anonymousOn], merge: true)
-        }
+        db.collection("users").document(uid)
+            .setData(["notificationOn": sender.isOn], merge: true)
     }
     
-    // MARK: - Alerts / Updates
+    // MARK: - Alerts
     
     func presentTextInputAlert(title: String,
                                placeholder: String,
-                               isSecure: Bool = false,
+                               isSecure: Bool,
                                completion: @escaping (String) -> Void) {
-        let alert = UIAlertController(title: title,
-                                      message: nil,
-                                      preferredStyle: .alert)
+        
+        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
         alert.addTextField { tf in
             tf.placeholder = placeholder
             tf.isSecureTextEntry = isSecure
         }
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
                 completion(text)
             }
         })
+        
         present(alert, animated: true)
     }
     
@@ -330,9 +386,7 @@ class ProfileViewController: UIViewController,
         picker.delegate = self
         picker.allowsEditing = true
         
-        let alert = UIAlertController(title: "Select Photo",
-                                      message: nil,
-                                      preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Select Photo", message: nil, preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Take Photo", style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 picker.sourceType = .camera
@@ -349,9 +403,12 @@ class ProfileViewController: UIViewController,
     
     func imagePickerController(_ picker: UIImagePickerController,
                                didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
         picker.dismiss(animated: true)
+        
         guard let selectedImage = info[.editedImage] as? UIImage ??
                 info[.originalImage] as? UIImage else { return }
+        
         self.profileImageView.image = selectedImage
         uploadProfilePhotoToFirebase(selectedImage)
     }
@@ -377,49 +434,471 @@ class ProfileViewController: UIViewController,
         }
         
         let base64String = imageData.base64EncodedString()
-        
         db.collection("users").document(uid).setData([
             "profileImageBase64": base64String
-        ], merge: true) { error in
-            if let error = error {
-                print("Firestore Save Failed: \(error.localizedDescription)")
-                return
-            }
-            print("Saved Base64 image to Firestore!")
-            
-            DispatchQueue.main.async {
-                self.profileImageView.image = finalImage
-            }
-        }
-    }
-    
-    // MARK: - Log Out
-    
-    @IBAction func logoutPressed(_ sender: UIButton) {
-        do {
-            try Auth.auth().signOut()
-            UserDefaults.standard.removeObject(forKey: "currentRoomCode")
-            
-            if let loginVC = storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
-                
-                guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
-                      let window = sceneDelegate.window else {
-                    return
-                }
-                
-                let navController = UINavigationController(rootViewController: loginVC)
-                navController.modalPresentationStyle = .fullScreen
-                window.rootViewController = navController
-                
-                UIView.transition(with: window,
-                                  duration: 0.3,
-                                  options: .transitionFlipFromLeft,
-                                  animations: nil,
-                                  completion: nil)
-            }
-            
-        } catch {
-            print("Error signing out: \(error.localizedDescription)")
-        }
+        ], merge: true)
     }
 }
+
+//import UIKit
+//import FirebaseAuth
+//import FirebaseStorage
+//import FirebaseFirestore
+//
+//class ProfileViewController: UIViewController,
+//                             UITableViewDelegate,
+//                             UITableViewDataSource,
+//                             UIImagePickerControllerDelegate,
+//                             UINavigationControllerDelegate {
+//    
+//    @IBOutlet weak var profileImageView: UIImageView!
+//    @IBOutlet weak var editPhotoButton: UIButton!
+//    @IBOutlet weak var nameLabel: UILabel!
+//    @IBOutlet weak var emailLabel: UILabel!
+//    @IBOutlet weak var tableView: UITableView!
+//    @IBOutlet weak var logoutButton: UIButton!
+//    @IBOutlet weak var roomCodeLabel: UILabel!
+//    
+//    let rows = ["Edit Profile", "Password", "Notification", "Leave Room"]
+//    var notificationOn = true
+//    
+//    let db = Firestore.firestore()
+//    var topBlackView: UIView?
+//    
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//        
+//        setupUI()
+//        
+//        tableView.delegate = self
+//        tableView.dataSource = self
+//        tableView.rowHeight = 44
+//        tableView.tableFooterView = UIView()
+//        tableView.separatorInset = .zero
+//        
+//        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "OptionCell")
+//
+//    }
+//    
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        loadUserData()
+//        loadRoomCode()
+//        loadSettingsFromFirestore()
+//    }
+//    
+//    // MARK: - Room Code
+//    
+//    func loadRoomCode() {
+//        guard let uid = Auth.auth().currentUser?.uid else { return }
+//        
+//        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
+//            guard let self = self else { return }
+//            
+//            if let error = error {
+//                print("Error fetching user data: \(error.localizedDescription)")
+//                return
+//            }
+//            
+//            var roomText = "No room code"
+//            if let data = snapshot?.data(),
+//               let roomCode = data["currentRoomCode"] as? String,
+//               !roomCode.isEmpty {
+//                roomText = "Room Code: \(roomCode)"
+//            }
+//            
+//            DispatchQueue.main.async {
+//                self.roomCodeLabel.text = roomText
+//            }
+//        }
+//    }
+//    
+//    // MARK: - Layout / UI
+//    
+//    override func viewDidLayoutSubviews() {
+//        super.viewDidLayoutSubviews()
+//        
+//        if topBlackView == nil {
+//            let viewToAdd = UIView()
+//            viewToAdd.backgroundColor = UIColor(red: 24/255, green: 24/255, blue: 24/255, alpha: 1)
+//            viewToAdd.translatesAutoresizingMaskIntoConstraints = false
+//            view.addSubview(viewToAdd)
+//            view.sendSubviewToBack(viewToAdd)
+//            
+//            NSLayoutConstraint.activate([
+//                viewToAdd.topAnchor.constraint(equalTo: view.topAnchor),
+//                viewToAdd.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//                viewToAdd.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//                viewToAdd.bottomAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: -23)
+//            ])
+//            topBlackView = viewToAdd
+//        }
+//        
+//        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
+//        profileImageView.clipsToBounds = true
+//        
+//        editPhotoButton.tintColor = .white
+//        editPhotoButton.layer.shadowOpacity = 0.2
+//        editPhotoButton.layer.shadowRadius = 4
+//        editPhotoButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+//    }
+//    
+//    private func setupUI() {
+//        profileImageView.contentMode = .scaleAspectFill
+//        nameLabel.font = UIFont.boldSystemFont(ofSize: 24)
+//        nameLabel.textAlignment = .center
+//        emailLabel.font = UIFont.systemFont(ofSize: 16)
+//        emailLabel.textColor = .secondaryLabel
+//        emailLabel.textAlignment = .center
+//        logoutButton.clipsToBounds = true
+//    }
+//    
+//    // MARK: - Load User Data
+//    
+//    private func loadUserData() {
+//        guard let user = Auth.auth().currentUser else {
+//            nameLabel.text = "Guest"
+//            emailLabel.text = ""
+//            profileImageView.image = UIImage(systemName: "person.circle.fill")
+//            profileImageView.tintColor = .gray
+//            return
+//        }
+//        
+//        nameLabel.text = user.displayName ?? "User"
+//        emailLabel.text = user.email
+//        
+//        let uid = user.uid
+//        
+//        db.collection("users").document(uid).getDocument { snapshot, error in
+//            if let error = error {
+//                print("Error loading user document: \(error.localizedDescription)")
+//                return
+//            }
+//            
+//            guard let data = snapshot?.data() else {
+//                print("No user data found in Firestore")
+//                return
+//            }
+//            
+//            if let firstName = data["firstName"] as? String {
+//                var fullName = firstName
+//                if let lastName = data["lastName"] as? String, !lastName.isEmpty {
+//                    fullName += " \(lastName)"
+//                }
+//                DispatchQueue.main.async {
+//                    self.nameLabel.text = fullName
+//                }
+//            }
+//            
+//            if let base64String = data["profileImageBase64"] as? String,
+//               let imageData = Data(base64Encoded: base64String),
+//               let profileImage = UIImage(data: imageData) {
+//                
+//                DispatchQueue.main.async {
+//                    self.profileImageView.image = profileImage
+//                    self.profileImageView.tintColor = .clear
+//                }
+//            } else {
+//                DispatchQueue.main.async {
+//                    self.profileImageView.image = UIImage(systemName: "person.circle.fill")
+//                    self.profileImageView.tintColor = .gray
+//                }
+//            }
+//        }
+//    }
+//    
+//    private func loadSettingsFromFirestore() {
+//        guard let uid = Auth.auth().currentUser?.uid else { return }
+//        db.collection("users").document(uid).getDocument { snapshot, _ in
+//            if let data = snapshot?.data() {
+//                self.notificationOn = data["notificationOn"] as? Bool ?? true
+//                self.tableView.reloadData()
+//            }
+//        }
+//    }
+//    
+//    // MARK: - TableView Data Source
+//    
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        rows.count
+//    }
+//    
+//    func tableView(_ tableView: UITableView,
+//                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        
+//        let rowTitle = rows[indexPath.row]
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "OptionCell", for: indexPath)
+//        
+//        cell.textLabel?.text = rowTitle
+//        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+//        
+//        // Notification switch
+//        if rowTitle == "Notification" {
+//            let toggle = UISwitch()
+//            toggle.isOn = notificationOn
+//            toggle.tag = indexPath.row
+//            toggle.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
+//            toggle.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+//            
+//            let container = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
+//            container.addSubview(toggle)
+//            toggle.translatesAutoresizingMaskIntoConstraints = false
+//            
+//            NSLayoutConstraint.activate([
+//                toggle.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+//                toggle.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+//            ])
+//            
+//            cell.accessoryView = container
+//            cell.selectionStyle = .none
+//            
+//        } else {
+//            cell.accessoryView = nil
+//            cell.accessoryType = .disclosureIndicator
+//            cell.selectionStyle = .default
+//        }
+//        
+//        return cell
+//    }
+//    
+//    // MARK: - TableView Delegate
+//    
+//    func tableView(_ tableView: UITableView,
+//                   didSelectRowAt indexPath: IndexPath) {
+//        
+//        tableView.deselectRow(at: indexPath, animated: true)
+//        let selected = rows[indexPath.row]
+//        
+//        switch selected {
+//        case "Edit Profile":
+//            break // segue handles
+//        
+//        case "Password":
+//            presentTextInputAlert(title: "Change Password",
+//                                  placeholder: "New Password",
+//                                  isSecure: true) { pw in
+//                self.updateFirebasePassword(pw)
+//            }
+//            
+//        case "Leave Room":
+//            presentLeaveRoomAlert()
+//            
+//        default:
+//            break
+//        }
+//    }
+//    
+//    // MARK: - Leave Room
+//    
+//    func presentLeaveRoomAlert() {
+//        let alert = UIAlertController(
+//            title: "Leave Room",
+//            message: "Are you sure you want to leave this room? You will be logged out immediately.",
+//            preferredStyle: .alert
+//        )
+//        
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//        
+//        alert.addAction(UIAlertAction(title: "Leave", style: .destructive) { _ in
+//            self.leaveRoomAndLogout()
+//        })
+//        
+//        present(alert, animated: true)
+//    }
+//    
+//    func leaveRoomAndLogout() {
+//        guard let uid = Auth.auth().currentUser?.uid else { return }
+//
+//        // 1️⃣ Remove user from Firestore room (simulate leaving)
+//        db.collection("roommateGroups")
+//            .whereField("members", arrayContains: uid)
+//            .getDocuments { [weak self] snapshot, error in
+//                guard let self = self else { return }
+//
+//                if let error = error {
+//                    print("Error finding user's room: \(error.localizedDescription)")
+//                } else {
+//                    snapshot?.documents.forEach { doc in
+//                        doc.reference.updateData([
+//                            "members": FieldValue.arrayRemove([uid])
+//                        ])
+//                    }
+//                }
+//
+//                // 2️⃣ Clear currentRoomCode in Firestore
+//                self.db.collection("users").document(uid).setData([
+//                    "currentRoomCode": ""
+//                ], merge: true)
+//
+//                // 3️⃣ Remove locally stored room code
+//                UserDefaults.standard.removeObject(forKey: "currentRoomCode")
+//
+//                // 4️⃣ Disable Home & Tasks tabs immediately
+//                if let tabBar = self.tabBarController {
+//                    for (index, item) in (tabBar.tabBar.items ?? []).enumerated() {
+//                        if index == 0 || index == 1 {  // Home + Tasks
+//                            item.isEnabled = false
+//                        } else {
+//                            item.isEnabled = true
+//                        }
+//                    }
+//
+//                    // Force user to Messages tab
+//                    tabBar.selectedIndex = 2
+//                }
+//
+//                // 5️⃣ Log out
+//                do {
+//                    try Auth.auth().signOut()
+//
+//                    if let loginVC = self.storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
+//                        let navController = UINavigationController(rootViewController: loginVC)
+//                        navController.modalPresentationStyle = .fullScreen
+//                        self.view.window?.rootViewController = navController
+//                        self.view.window?.makeKeyAndVisible()
+//                    }
+//                } catch {
+//                    print("Error signing out: \(error.localizedDescription)")
+//                }
+//            }
+//    }
+//
+//    // Helper function to clear local data and log out
+//    private func clearLocalAndLogout() {
+//        guard let window = self.view.window else { return }
+//
+//        // Flag that user left a room
+//        UserDefaults.standard.set(true, forKey: "didLeaveRoom")
+//
+//        UserDefaults.standard.removeObject(forKey: "currentRoomCode")
+//
+//        do {
+//            try Auth.auth().signOut()
+//
+//            if let loginVC = self.storyboard?.instantiateViewController(withIdentifier: "LoginViewController") {
+//                let navController = UINavigationController(rootViewController: loginVC)
+//                navController.modalPresentationStyle = .fullScreen
+//                window.rootViewController = navController
+//                window.makeKeyAndVisible()
+//            }
+//        } catch {
+//            print("Error signing out: \(error.localizedDescription)")
+//        }
+//    }
+//
+//
+//    // MARK: - Switch
+//    
+//    @objc func switchChanged(_ sender: UISwitch) {
+//        guard let uid = Auth.auth().currentUser?.uid else { return }
+//        
+//        db.collection("users").document(uid)
+//            .setData(["notificationOn": sender.isOn], merge: true)
+//    }
+//    
+//    // MARK: - Alerts
+//    
+//    func presentTextInputAlert(title: String,
+//                               placeholder: String,
+//                               isSecure: Bool,
+//                               completion: @escaping (String) -> Void) {
+//        
+//        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+//        
+//        alert.addTextField { tf in
+//            tf.placeholder = placeholder
+//            tf.isSecureTextEntry = isSecure
+//        }
+//        
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//        
+//        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
+//            if let text = alert.textFields?.first?.text, !text.isEmpty {
+//                completion(text)
+//            }
+//        })
+//        
+//        present(alert, animated: true)
+//    }
+//    
+//    func updateFirebasePassword(_ newPassword: String) {
+//        Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
+//            if let error = error {
+//                print("Error updating password: \(error.localizedDescription)")
+//            }
+//        }
+//    }
+//    
+//    // MARK: - Photo Editing
+//    
+//    @IBAction func editPhotoButtonPressed(_ sender: UIButton) {
+//        let picker = UIImagePickerController()
+//        picker.delegate = self
+//        picker.allowsEditing = true
+//        
+//        let alert = UIAlertController(title: "Select Photo",
+//                                      message: nil,
+//                                      preferredStyle: .actionSheet)
+//        
+//        alert.addAction(UIAlertAction(title: "Take Photo", style: .default) { _ in
+//            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+//                picker.sourceType = .camera
+//                self.present(picker, animated: true)
+//            }
+//        })
+//        
+//        alert.addAction(UIAlertAction(title: "Choose from Library", style: .default) { _ in
+//            picker.sourceType = .photoLibrary
+//            self.present(picker, animated: true)
+//        })
+//        
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//        
+//        present(alert, animated: true)
+//    }
+//    
+//    func imagePickerController(_ picker: UIImagePickerController,
+//                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+//        
+//        picker.dismiss(animated: true)
+//        
+//        guard let selectedImage = info[.editedImage] as? UIImage ??
+//                info[.originalImage] as? UIImage else { return }
+//        
+//        self.profileImageView.image = selectedImage
+//        uploadProfilePhotoToFirebase(selectedImage)
+//    }
+//    
+//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+//        picker.dismiss(animated: true)
+//    }
+//    
+//    func uploadProfilePhotoToFirebase(_ image: UIImage) {
+//        guard let user = Auth.auth().currentUser else { return }
+//        let uid = user.uid
+//        
+//        let targetSize = CGSize(width: 256, height: 256)
+//        UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
+//        image.draw(in: CGRect(origin: .zero, size: targetSize))
+//        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+//        UIGraphicsEndImageContext()
+//        
+//        guard let finalImage = resizedImage,
+//              let imageData = finalImage.jpegData(compressionQuality: 0.7) else {
+//            print("Could not resize image")
+//            return
+//        }
+//        
+//        let base64String = imageData.base64EncodedString()
+//        
+//        db.collection("users").document(uid).setData([
+//            "profileImageBase64": base64String
+//        ], merge: true)
+//    }
+//    
+//    // MARK: - Logout Button
+//    
+//    @IBAction func logoutPressed(_ sender: UIButton) {
+//        leaveRoomAndLogout()
+//    }
+//}

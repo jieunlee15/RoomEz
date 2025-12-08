@@ -1,15 +1,25 @@
 import Foundation
 import FirebaseFirestore
+
 enum TaskStatus: String, Codable {
     case todo = "To Do"
     case inProgress = "In Progress"
     case done = "Done"
 }
+
 enum TaskPriority: String, Codable, CaseIterable {
     case low = "Low"
     case medium = "Medium"
     case high = "High"
 }
+
+enum TaskFrequency: String, Codable, CaseIterable {
+    case none = "None"
+    case daily = "Daily"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+}
+
 class RoomTask: Codable {
     let id: UUID
     var title: String
@@ -22,6 +32,7 @@ class RoomTask: Codable {
     var updatedAt: Date?
     var completionPercent: Double
     var reminderSet: Bool
+    var frequency: TaskFrequency
     
     // MARK: - Initializer
     init(
@@ -35,7 +46,8 @@ class RoomTask: Codable {
         createdAt: Date = Date(),
         updatedAt: Date? = nil,
         completionPercent: Double = 0.0,
-        reminderSet: Bool = false
+        reminderSet: Bool = false,
+        frequency: TaskFrequency = .none
     ) {
         self.id = id
         self.title = title
@@ -48,24 +60,38 @@ class RoomTask: Codable {
         self.updatedAt = updatedAt
         self.completionPercent = completionPercent
         self.reminderSet = reminderSet
+        self.frequency = frequency
     }
     
     
     // MARK: - Encode (Swift → Firestore)
     func toDictionary() -> [String: Any] {
-        return [
+        var dict: [String: Any] = [
             "id": id.uuidString,
             "title": title,
             "details": details ?? "",
-            "dueDate": dueDate as Any,
             "assignee": assignee as Any,
             "status": status.rawValue,
             "priority": priority.rawValue,
             "createdAt": Timestamp(date: createdAt),
-            "updatedAt": updatedAt != nil ? Timestamp(date: updatedAt!) : NSNull(),
             "completionPercent": completionPercent,
-            "reminderSet": reminderSet
+            "reminderSet": reminderSet,
+            "frequency": frequency.rawValue
         ]
+        
+        if let due = dueDate {
+            dict["dueDate"] = Timestamp(date: due)
+        } else {
+            dict["dueDate"] = NSNull()
+        }
+        
+        if let updated = updatedAt {
+            dict["updatedAt"] = Timestamp(date: updated)
+        } else {
+            dict["updatedAt"] = NSNull()
+        }
+        
+        return dict
     }
     
     
@@ -82,7 +108,7 @@ class RoomTask: Codable {
               let priority = TaskPriority(rawValue: priorityRaw),
               let createdAtTS = data["createdAt"] as? Timestamp
         else {
-            print("❌ RoomTask decoding failed — missing required fields")
+            print("RoomTask decoding failed — missing required fields")
             return nil
         }
         
@@ -93,6 +119,15 @@ class RoomTask: Codable {
         let updatedAt = (data["updatedAt"] as? Timestamp)?.dateValue()
         let completionPercent = data["completionPercent"] as? Double ?? 0.0
         let reminderSet = data["reminderSet"] as? Bool ?? false
+        
+        // Frequency (default to .none if not present)
+        let frequency: TaskFrequency
+        if let freqRaw = data["frequency"] as? String,
+           let freqValue = TaskFrequency(rawValue: freqRaw) {
+            frequency = freqValue
+        } else {
+            frequency = .none
+        }
         
         return RoomTask(
             id: uuid,
@@ -105,7 +140,8 @@ class RoomTask: Codable {
             createdAt: createdAtTS.dateValue(),
             updatedAt: updatedAt,
             completionPercent: completionPercent,
-            reminderSet: reminderSet
+            reminderSet: reminderSet,
+            frequency: frequency
         )
     }
 }

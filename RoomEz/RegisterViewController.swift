@@ -1,5 +1,4 @@
 
-
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
@@ -23,6 +22,47 @@ class RegisterViewController: UIViewController {
         errorMessage.text = ""
         errorMessage.textColor = .systemRed
         errorMessage.font = .systemFont(ofSize: 14, weight: .medium)
+        
+        // Make password fields secure by default
+        passwordText.isSecureTextEntry = true
+        confirmPasswordText.isSecureTextEntry = true
+        
+        // Add "show/hide" buttons
+        addShowPasswordButton(to: passwordText)
+        addShowPasswordButton(to: confirmPasswordText)
+    }
+
+    // MARK: - Show/Hide Password
+    private func addShowPasswordButton(to textField: UITextField) {
+        let textFieldHeight = textField.frame.height
+        let padding: CGFloat = 8
+        
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "eye"), for: .normal)
+        button.tintColor = .gray
+        button.frame = CGRect(x: 0, y: 0, width: textFieldHeight * 0.6, height: textFieldHeight * 0.6) // scale icon relative to text field height
+        button.addTarget(self, action: #selector(togglePasswordVisibility(_:)), for: .touchUpInside)
+        
+        // Container to add padding
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: button.frame.width + padding * 2, height: textFieldHeight))
+        button.center = CGPoint(x: container.bounds.width/2, y: container.bounds.height/2)
+        container.addSubview(button)
+        
+        textField.rightView = container
+        textField.rightViewMode = .always
+    }
+
+    @objc private func togglePasswordVisibility(_ sender: UIButton) {
+        guard let textField = sender.superview as? UITextField ?? sender.superview?.superview as? UITextField else { return }
+        textField.isSecureTextEntry.toggle()
+        
+        let imageName = textField.isSecureTextEntry ? "eye" : "eye.slash"
+        sender.setImage(UIImage(systemName: imageName), for: .normal)
+        
+        // Fix cursor jumping issue when toggling isSecureTextEntry
+        let currentText = textField.text
+        textField.text = ""
+        textField.text = currentText
     }
     
     
