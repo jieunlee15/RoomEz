@@ -3,37 +3,30 @@ import FirebaseAuth
 import FirebaseFirestore
 
 class DashboardViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
-    // MARK: - Outlets
-    @IBOutlet weak var greetingLabel: UILabel!
-    @IBOutlet weak var messageLabel: UILabel!
-    @IBOutlet weak var progressLabel: UILabel!
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var progressContainer: UIView!
-    @IBOutlet weak var detailButton: UIButton!
-    @IBOutlet weak var profileImageView: UIImageView!
     
-    // MARK: - Layers
+    @IBOutlet weak var greetingLabel: UILabel?
+    @IBOutlet weak var messageLabel: UILabel?
+    @IBOutlet weak var progressLabel: UILabel?
+    @IBOutlet weak var tableView: UITableView?
+    @IBOutlet weak var progressContainer: UIView?
+    @IBOutlet weak var detailButton: UIButton?
+    @IBOutlet weak var profileImageView: UIImageView?
+    
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
     
-    // MARK: - Firestore
     private let db = Firestore.firestore()
     private var roomCode: String?
     private var userID: String?
-    
     private var tasksListener: ListenerRegistration?
-
-    // MARK: - Data
+    
     private var allTasks: [RoomTask] = []
     private var filteredTasks: [RoomTask] {
         allTasks.filter { $0.status != .done }
     }
-
-    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupTable()
         setupCircularProgress()
         fetchUserData()
@@ -45,37 +38,44 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         updateProgress()
         fetchUserData()
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
-        profileImageView.clipsToBounds = true
-        
-        profileImageView.layer.borderWidth = 1
-        profileImageView.layer.borderColor = UIColor(hex: "#4F9BDE").cgColor
+        if let imageView = profileImageView {
+            imageView.layer.cornerRadius = imageView.bounds.width / 2
+            imageView.clipsToBounds = true
+            imageView.layer.borderWidth = 1
+            imageView.layer.borderColor = UIColor(hex: "#4F9BDE").cgColor
+        }
     }
-
+    
     deinit {
         tasksListener?.remove()
     }
-
+    
     // MARK: - UI Setup
+    
     private func setupTable() {
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = 110
-        tableView.estimatedRowHeight = 110
+        tableView?.dataSource = self
+        tableView?.delegate = self
+        tableView?.rowHeight = 110
+        tableView?.estimatedRowHeight = 110
         
-        let lineView = UIView(frame: CGRect(x: 0,y: 0, width: tableView.bounds.width, height: 0.5))
-        lineView.backgroundColor = UIColor.separator
-        tableView.tableHeaderView = lineView
+        if let tv = tableView {
+            let lineView = UIView(frame: CGRect(x: 0, y: 0, width: tv.bounds.width, height: 0.5))
+            lineView.backgroundColor = UIColor.separator
+            tv.tableHeaderView = lineView
+        }
         
-        profileImageView.image = UIImage(systemName: "person.crop.circle")
-        profileImageView.tintColor = .gray
-        profileImageView.contentMode = .scaleAspectFill
+        if let imageView = profileImageView {
+            imageView.image = UIImage(systemName: "person.crop.circle")
+            imageView.tintColor = .gray
+            imageView.contentMode = .scaleAspectFill
+        }
     }
-
-    // MARK: - Fetch User + Room
+    
+    // MARK: - User + Room
+    
     private func fetchUserData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         userID = uid
@@ -85,66 +85,43 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             let data = snap?.data() ?? [:]
             
             let name = data["firstName"] as? String ?? "there"
-            self.greetingLabel.text = "Hello \(name)!"
+            self.greetingLabel?.text = "Hello \(name)!"
             
             if let base64 = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64),
                let img = UIImage(data: imageData) {
-                self.profileImageView.image = img
-                self.profileImageView.tintColor = .clear
+                self.profileImageView?.image = img
+                self.profileImageView?.tintColor = .clear
             } else {
-                self.profileImageView.image = UIImage(systemName: "person.crop.circle")
-                self.profileImageView.tintColor = .gray
+                self.profileImageView?.image = UIImage(systemName: "person.crop.circle")
+                self.profileImageView?.tintColor = .gray
             }
         }
     }
-
+    
     private func loadUserAndRoomData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-
-        // Check Firestore for the user's currentRoomCode
-        db.collection("users").document(uid).getDocument { [weak self] snap, error in
-            guard let self = self else { return }
-            if let error = error {
-                print("Error fetching user data: \(error.localizedDescription)")
-                return
-            }
-            
-            let data = snap?.data() ?? [:]
-            let currentRoomCode = data["currentRoomCode"] as? String ?? ""
-            
-            // If user has no room, clear roomCode and update UI
-            if currentRoomCode.isEmpty {
-                print("User has no room, skipping room data fetch")
-                self.roomCode = nil
-                // Update any UI that depends on roomCode
-                return
-            }
-            
-            // User has a room → fetch room document
-            self.db.collection("roommateGroups").document(currentRoomCode)
-                .getDocument { roomSnap, roomError in
-                    if let roomError = roomError {
-                        print("Error fetching room: \(roomError.localizedDescription)")
-                        return
-                    }
-                    
-                    guard let roomSnap = roomSnap, roomSnap.exists else {
-                        print("Room does not exist")
-                        self.roomCode = nil
-                        return
-                    }
-                    
-                    self.roomCode = roomSnap.documentID
-                    // You can call any method here to load room-specific UI
-                    self.updateProgress()
-                    self.fetchUserData()
+        
+        db.collection("roommateGroups")
+            .whereField("members", arrayContains: uid)
+            .getDocuments { [weak self] snap, error in
+                guard let self = self else { return }
+                if let error = error {
+                    print("Error fetching room for dashboard: \(error)")
+                    return
                 }
-        }
+                guard let doc = snap?.documents.first else {
+                    print("No room for this user")
+                    return
+                }
+                
+                self.roomCode = doc.documentID
+                self.startListeningToTasks()
+            }
     }
-
-
-    // MARK: - Listen to Firestore Tasks
+    
+    // MARK: - Task listener
+    
     private func startListeningToTasks() {
         guard let code = roomCode else { return }
         
@@ -161,17 +138,20 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                 guard let docs = snap?.documents else { return }
                 
                 self.allTasks = docs.compactMap { RoomTask.fromDocument($0.data()) }
-                self.tableView.reloadData()
+                self.tableView?.reloadData()
                 self.updateProgress()
             }
     }
-
-    // MARK: - Circular Progress
+    
+    // MARK: - Circular progress
+    
     func setupCircularProgress() {
-        let center = CGPoint(x: progressContainer.bounds.midX,
-                             y: progressContainer.bounds.midY)
-        let radius = min(progressContainer.bounds.width,
-                         progressContainer.bounds.height) / 2.5
+        guard let container = progressContainer else { return }
+        
+        let center = CGPoint(x: container.bounds.midX,
+                             y: container.bounds.midY)
+        let radius = min(container.bounds.width,
+                         container.bounds.height) / 2.5
         
         let path = UIBezierPath(
             arcCenter: center,
@@ -180,14 +160,14 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             endAngle: 1.5 * .pi,
             clockwise: true
         )
-        progressLabel.textColor = UIColor(hex: "#305B9D")
+        progressLabel?.textColor = UIColor(hex: "#305B9D")
         
         trackLayer.path = path.cgPath
         trackLayer.strokeColor = UIColor.systemGray5.cgColor
         trackLayer.lineWidth = 10
         trackLayer.fillColor = UIColor.clear.cgColor
         trackLayer.lineCap = .round
-        progressContainer.layer.addSublayer(trackLayer)
+        container.layer.addSublayer(trackLayer)
         
         progressLayer.path = path.cgPath
         progressLayer.strokeColor = UIColor(hex: "#305B9D").cgColor
@@ -195,14 +175,14 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         progressLayer.fillColor = UIColor.clear.cgColor
         progressLayer.lineCap = .round
         progressLayer.strokeEnd = 0
-        progressContainer.layer.addSublayer(progressLayer)
+        container.layer.addSublayer(progressLayer)
     }
-
+    
     func updateProgress() {
         guard !allTasks.isEmpty else {
             progressLayer.strokeEnd = 0
-            progressLabel.text = "0%"
-            messageLabel.text = "Let's get started together!"
+            progressLabel?.text = "0%"
+            messageLabel?.text = "Let's get started together!"
             return
         }
         
@@ -213,41 +193,41 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             self.progressLayer.strokeEnd = ratio
         }
         
-        progressLabel.text = "\(Int(ratio * 100))%"
+        progressLabel?.text = "\(Int(ratio * 100))%"
         
         switch ratio {
         case 0:
-            messageLabel.text = "Let's get started together!"
+            messageLabel?.text = "Let's get started together!"
         case 0..<0.85:
-            messageLabel.text = "Nice teamwork — we're getting there!"
+            messageLabel?.text = "Nice teamwork — we're getting there!"
         case 0.85..<1:
-            messageLabel.text = "Almost done — just a few more steps!"
+            messageLabel?.text = "Almost done — just a few more steps!"
         default:
-            messageLabel.text = "All done! Great job, everyone!"
+            messageLabel?.text = "All done! Great job, everyone!"
         }
     }
-
-    // MARK: - Segue to Task Tab
+    
+    // MARK: - Segue to Tasks tab
+    
     @IBAction func detailPressed(_ sender: Any) {
-        // Jump to the Tasks tab
-        self.tabBarController?.selectedIndex = 1
+        tabBarController?.selectedIndex = 1
     }
-
-
-    // MARK: - TableView
+    
+    // MARK: - Table view
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredTasks.count
     }
     
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
+        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as? TaskCell else {
             return UITableViewCell(style: .default, reuseIdentifier: "FallbackCell")
         }
         
         let task = filteredTasks[indexPath.row]
-        cell.configure(with: task)   // TaskCell should show overdue label here too
+        cell.configure(with: task)
         
         cell.onStatusTapped = { [weak self, weak tableView, weak cell] in
             guard let self = self,
@@ -255,18 +235,17 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
                   let cell = cell,
                   let tappedIndexPath = tableView.indexPath(for: cell) else { return }
             
-            let task = self.filteredTasks[tappedIndexPath.row]
-            self.toggleTaskStatus(task)
+            let tappedTask = self.filteredTasks[tappedIndexPath.row]
+            self.toggleTaskStatus(tappedTask)
         }
         
         return cell
     }
-
+    
     private func toggleTaskStatus(_ task: RoomTask) {
         guard let code = roomCode else { return }
-
-        var updated = task
         
+        var updated = task
         switch task.status {
         case .todo:       updated.status = .inProgress
         case .inProgress: updated.status = .done
