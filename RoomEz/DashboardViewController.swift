@@ -49,6 +49,15 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         }
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showTaskDetailFromDashboard",
+           let dest = segue.destination as? TaskDetailViewController,
+           let task = sender as? RoomTask {
+            dest.task = task
+        }
+    }
+
+    
     deinit {
         tasksListener?.remove()
     }
@@ -213,6 +222,8 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         tabBarController?.selectedIndex = 1
     }
     
+    
+    
     // MARK: - Table view
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -242,6 +253,14 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         return cell
     }
     
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        let task = filteredTasks[indexPath.row]
+        performSegue(withIdentifier: "showTaskDetailFromDashboard", sender: task)
+    }
+
     private func toggleTaskStatus(_ task: RoomTask) {
         guard let code = roomCode else { return }
         

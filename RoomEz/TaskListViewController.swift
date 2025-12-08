@@ -344,11 +344,21 @@ class TaskListViewController: UIViewController,
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showNewTask",
            let dest = segue.destination as? NewTaskViewController {
-
+            
             dest.delegate = self
             dest.editingTask = sender as? RoomTask
+        
+        } else if segue.identifier == "showTaskDetail",
+                  let dest = segue.destination as? TaskDetailViewController,
+                  let task = sender as? RoomTask {
+            
+            // Adjust property name to whatever you have on TaskDetailViewController
+            dest.task = task
+            // if you need roomCode or anything else:
+            // dest.roomCode = self.roomCode
         }
     }
+
 
     // MARK: - Banner
     func showBanner(message: String) {
@@ -408,6 +418,13 @@ class TaskListViewController: UIViewController,
                 banner.removeFromSuperview()
             })
         }
+    }
+    func tableView(_ tableView: UITableView,
+                   didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let task = filteredTasks[indexPath.row]
+        performSegue(withIdentifier: "showTaskDetail", sender: task)
     }
 }
 
