@@ -98,27 +98,51 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             }
         }
     }
-    
+
     private func loadUserAndRoomData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
-        db.collection("roommateGroups")
-            .whereField("members", arrayContains: uid)
-            .getDocuments { [weak self] snap, error in
-                guard let self = self else { return }
-                if let error = error {
-                    print("Error fetching room for dashboard: \(error)")
-                    return
-                }
-                guard let doc = snap?.documents.first else {
-                    print("No room for this user")
-                    return
-                }
-                
-                self.roomCode = doc.documentID
-                self.startListeningToTasks()
+        // Check Firestore for the user's currentRoomCode
+        db.collection("users").document(uid).getDocument { [weak self] snap, error in
+            guard let self = self else { return }
+            if let error = error {
+                print("Error fetching user data: \(error.localizedDescription)")
+                return
             }
+            
+            let data = snap?.data() ?? [:]
+            let currentRoomCode = data["currentRoomCode"] as? String ?? ""
+            
+            // If user has no room, clear roomCode and update UI
+            if currentRoomCode.isEmpty {
+                print("User has no room, skipping room data fetch")
+                self.roomCode = nil
+                // Update any UI that depends on roomCode
+                return
+            }
+            
+            // User has a room → fetch room document
+            self.db.collection("roommateGroups").document(currentRoomCode)
+                .getDocument { roomSnap, roomError in
+                    if let roomError = roomError {
+                        print("Error fetching room: \(roomError.localizedDescription)")
+                        return
+                    }
+                    
+                    guard let roomSnap = roomSnap, roomSnap.exists else {
+                        print("Room does not exist")
+                        self.roomCode = nil
+                        return
+                    }
+                    
+                    self.roomCode = roomSnap.documentID
+                    // You can call any method here to load room-specific UI
+                    self.updateProgress()
+                    self.fetchUserData()
+                }
+        }
     }
+
 
     // MARK: - Listen to Firestore Tasks
     private func startListeningToTasks() {
