@@ -195,7 +195,19 @@ class TaskCell: UITableViewCell {
             )
         }
         
-        // Priority pill
+        // --- OVERDUE OVERRIDE FOR PRIORITY PILL ---
+        if let due = task.dueDate,
+           task.status != .done,
+           due < Date() {
+            
+            priorityLabel?.setTitle("Overdue", for: .normal)
+            priorityLabel?.backgroundColor = UIColor.systemRed.withAlphaComponent(0.15)
+            priorityLabel?.setTitleColor(.systemRed, for: .normal)
+            priorityLabel?.titleLabel?.font = UIFont.boldSystemFont(ofSize: 12)
+            return
+        }
+        
+        // --- DEFAULT PRIORITY (Low / Medium / High) ---
         if let priorityLabel = priorityLabel {
             priorityLabel.setTitle(task.priority.rawValue, for: .normal)
             switch task.priority {
