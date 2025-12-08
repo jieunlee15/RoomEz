@@ -1,4 +1,10 @@
-// Comment.swift
+//
+//  Comment.swift
+//  RoomEz
+//
+//  Created by Venkataraman, Shriya on 12/8/25.
+//
+
 
 import Foundation
 
@@ -9,3 +15,5 @@ struct Comment {
     let timestamp: Date
     let replyToAuthor: String? // This is the new field for replies
 }
+
+

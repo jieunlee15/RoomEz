@@ -1,22 +1,13 @@
-//  AnnouncementViewController.swift
-//  RoomEz
-//  Created by Jieun Lee on 10/20/25.
-
 import UIKit
 import FirebaseFirestore
 import FirebaseAuth
 
-struct Announcement {
-    let id: String
-    let title: String
-    let content: String
-    let author: String
-    let isAnonymous: Bool
-    let date: Date
-}
+class AnnouncementViewController: UIViewController,
+                                 UITableViewDataSource,
+                                 UITableViewDelegate,
+                                 NewAnnouncementDelegate,
+                                 AnnouncementCellDelegate {
 
-class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITableViewDelegate, NewAnnouncementDelegate {
-    
     @IBOutlet weak var tableView: UITableView!
     
     var announcements: [Announcement] = []
@@ -37,6 +28,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Announcements"
+        
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
@@ -55,6 +47,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         self.roomCode = code
     }
     
+    // MARK: - Live Firestore Listener
     private func startListening(for roomCode: String?) {
         listener?.remove()
         guard let code = roomCode, !code.isEmpty else { return }
@@ -78,7 +71,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                     if data["isArchived"] as? Bool ?? false { continue }
                     
                     if let expiresTS = data["expiresAt"] as? Timestamp,
-                       expiresTS.dateValue() < now {
+                        expiresTS.dateValue() < now {
                         expiredIDs.append(doc.documentID)
                         continue
                     }
@@ -94,9 +87,8 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
                     freshAnnouncements.append(announcement)
                 }
                 
-                // Show banner only for new announcements after first load
                 if self.hasLoadedOnce,
-                   freshAnnouncements.count > self.lastAnnouncementCount {
+                    freshAnnouncements.count > self.lastAnnouncementCount {
                     self.showNewAnnouncementBanner()
                 }
                 
@@ -112,47 +104,81 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             }
     }
     
-    
+    // MARK: - Add Announcement
     @IBAction func addAnnouncementTapped(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "showNewAnnouncement", sender: self)
     }
     
+    // MARK: - Prepare for Segues
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "commentsSegue",
+           let dest = segue.destination as? CommentsViewController,
+           let announcement = sender as? Announcement {
+
+            guard let roomCode = self.roomCode else {
+                print("❌ ERROR: roomCode is nil in AnnouncementViewController")
+                return
+            }
+
+            dest.roomCode = roomCode
+            dest.announcementID = announcement.id
+            dest.announcement = announcement
+        }
+        
         if segue.identifier == "showNewAnnouncement",
            let dest = segue.destination as? NewAnnouncementViewController {
             dest.delegate = self
             dest.roomCode = roomCode
         }
     }
-    
-    // Delegate called when user taps Submit in the NewAnnouncement screen
-    // Delegate called when user taps Submit in the NewAnnouncement screen
+
     func didPostAnnouncement(_ announcement: Announcement) {
-        // Insert locally for immediate feedback
         tableView.reloadData()
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    // MARK: - TableView
+    
+    func tableView(_ tableView: UITableView,
+                   numberOfRowsInSection section: Int) -> Int {
         return announcements.count
     }
     
-    func tableView(_ tableView: UITableView,cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+                
         let cell = tableView.dequeueReusableCell(
             withIdentifier: "AnnouncementCell",
             for: indexPath
         ) as! AnnouncementCell
+        
         let announcement = announcements[indexPath.row]
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM-dd"
-        let dateString = dateFormatter.string(from: announcement.date)
-        
-        cell.authorLabel.text = "\(announcement.author) | \(dateString)"
-        cell.titleLabel.text = announcement.title
-        cell.contentLabel.text = announcement.content
+        cell.configure(with: announcement, delegate: self)
         return cell
     }
-    // Swipe to delete
+    
+    // MARK: - AnnouncementCellDelegate
+    
+    func didTapComments(for announcementID: String) {
+        guard let announcement = announcements.first(where: { $0.id == announcementID }) else { return }
+        
+        // 1. Get a reference to your Storyboard
+        let storyboard = UIStoryboard(name: "Main", bundle: nil) // Change "Main" if your storyboard has a different name
+        
+        // 2. Instantiate the View Controller using the Storyboard ID
+        guard let commentsVC = storyboard.instantiateViewController(withIdentifier: "CommentsViewControllerID") as? CommentsViewController else {
+            fatalError("Failed to instantiate CommentsViewController from Storyboard.")
+        }
+        
+        // 3. Pass the required data to the instance
+        commentsVC.announcement = announcement
+        commentsVC.announcementID = announcement.id
+        // Assuming 'roomCode' is a property on your current view controller
+        commentsVC.roomCode = self.roomCode
+        
+        // 4. Push the instantiated object
+        navigationController?.pushViewController(commentsVC, animated: true)
+    }
+    // MARK: - Swipe to Delete
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
@@ -162,24 +188,25 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             completion(true)
         }
         
-        deleteAction.backgroundColor = .systemRed
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
     
     private func deleteAnnouncement(at indexPath: IndexPath) {
         guard let roomCode = roomCode else { return }
+        
         let announcementID = announcements[indexPath.row].id
+        
         db.collection("roommateGroups")
             .document(roomCode)
             .collection("announcements")
             .document(announcementID)
             .delete { error in
-                if let error = error {
-                    print("❌ Delete failed: \(error.localizedDescription)")
-                }
+                if let e = error { print("Delete failed: \(e)") }
             }
     }
-
+    
+    // MARK: - Banner
+    
     func showNewAnnouncementBanner() {
         guard notificationsEnabled else { return }
         
@@ -187,11 +214,6 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
         let banner = UIView()
         banner.backgroundColor = .systemBlue
         banner.layer.cornerRadius = 12
-        banner.layer.masksToBounds = false
-        banner.layer.shadowColor = UIColor.black.cgColor
-        banner.layer.shadowOpacity = 0.3
-        banner.layer.shadowOffset = CGSize(width: 0, height: 2)
-        banner.layer.shadowRadius = 4
         banner.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(banner)
         
@@ -214,23 +236,24 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
             equalTo: view.safeAreaLayoutGuide.topAnchor,
             constant: -bannerHeight
         )
+        
         NSLayoutConstraint.activate([
             banner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             banner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             banner.heightAnchor.constraint(equalToConstant: bannerHeight),
             topConstraint
         ])
+        
         view.layoutIfNeeded()
         
         topConstraint.constant = 16
+        
         UIView.animate(withDuration: 0.5,
                        delay: 0,
                        usingSpringWithDamping: 0.8,
                        initialSpringVelocity: 0.5,
                        options: [],
-                       animations: {
-            self.view.layoutIfNeeded()
-        })
+                       animations: { self.view.layoutIfNeeded() })
         
         let tap = UITapGestureRecognizer(target: self,
                                          action: #selector(dismissBannerView(_:)))
@@ -239,15 +262,10 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     
     @objc func dismissBannerView(_ sender: UITapGestureRecognizer) {
         guard let banner = sender.view else { return }
-        UIView.animate(withDuration: 0.3,
-                       animations: {
-            banner.transform = CGAffineTransform(
-                translationX: 0,
-                y: -banner.frame.height - 16
-            )
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            banner.transform = CGAffineTransform(translationX: 0, y: -80)
             banner.alpha = 0
-        }, completion: { _ in
-            banner.removeFromSuperview()
-        })
+        }, completion: { _ in banner.removeFromSuperview() })
     }
 }
