@@ -1,3 +1,10 @@
+//
+//  EditProfileViewController.swift
+//  RoomEz
+//
+//  Created by Ananya Singh on 12/1/25.
+//
+
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
@@ -9,7 +16,7 @@ class EditProfileViewController: UIViewController {
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var saveButton: UIButton!
     
-    // values passed from ProfileViewController
+    // Values passed in from ProfileViewController
     var currentFirstName: String?
     var currentLastName: String?
     var currentEmail: String?
@@ -24,14 +31,14 @@ class EditProfileViewController: UIViewController {
         firstNameTextField.text = currentFirstName
         lastNameTextField.text = currentLastName
         emailTextField.text = currentEmail
-        emailTextField.isEnabled = false   // don’t edit email for now
+        emailTextField.isEnabled = false   // email read-only for now
         
         saveButton.layer.cornerRadius = 10
         saveButton.clipsToBounds = true
     }
     
     @IBAction func saveButtonPressed(_ sender: UIButton) {
-        print("saveButtonPressed called")  // debug
+        print("saveButtonPressed called")
         
         guard let newFirst = firstNameTextField.text, !newFirst.isEmpty,
               let newLast = lastNameTextField.text, !newLast.isEmpty else {
@@ -41,36 +48,40 @@ class EditProfileViewController: UIViewController {
         
         let fullDisplayName = "\(newFirst) \(newLast)"
         
-        // Update Firebase Auth
-        if let user = Auth.auth().currentUser {
-            let changeRequest = user.createProfileChangeRequest()
-            changeRequest.displayName = fullDisplayName
-            changeRequest.commitChanges { error in
-                if let error = error {
-                    print("Error updating display name: \(error.localizedDescription)")
-                } else {
-                    print("Display name updated in Firebase Auth")
-                }
+        guard let user = Auth.auth().currentUser,
+              let uid = user.uid as String? else {
+            print("No authenticated user")
+            return
+        }
+        
+        // 1) Update Firebase Auth displayName
+        let changeRequest = user.createProfileChangeRequest()
+        changeRequest.displayName = fullDisplayName
+        
+        changeRequest.commitChanges { error in
+            if let error = error {
+                print("Error updating display name: \(error.localizedDescription)")
+            } else {
+                print("Display name updated in Firebase Auth")
             }
         }
         
-        // Update Firestore
-        if let uid = Auth.auth().currentUser?.uid {
-            db.collection("users").document(uid).setData([
-                "firstName": newFirst,
-                "lastName": newLast,
-                "displayName": fullDisplayName
-            ], merge: true) { error in
-                if let error = error {
-                    print("Error updating Firestore profile: \(error.localizedDescription)")
-                } else {
-                    print("Profile name updated in Firestore")
-                }
+        // 2) Update Firestore user document, then pop back
+        db.collection("users").document(uid).setData([
+            "firstName": newFirst,
+            "lastName": newLast,
+            "displayName": fullDisplayName
+        ], merge: true) { error in
+            if let error = error {
+                print("Error updating Firestore profile: \(error.localizedDescription)")
+                return
+            }
+            print("Profile name updated in Firestore")
+            
+            // Pop back to Profile on main thread
+            DispatchQueue.main.async {
+                self.navigationController?.popViewController(animated: true)
             }
         }
-        
-        // This sends you back to ProfileViewController
-        navigationController?.popViewController(animated: true)
     }
 }
-

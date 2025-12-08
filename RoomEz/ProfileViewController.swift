@@ -43,7 +43,7 @@ class ProfileViewController: UIViewController,
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadUserData()          // refresh name/photo/email every time
+        loadUserData()
         loadRoomCode()
         loadSettingsFromFirestore()
     }
@@ -53,8 +53,7 @@ class ProfileViewController: UIViewController,
     func loadRoomCode() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        let userRef = db.collection("users").document(uid)
-        userRef.getDocument { [weak self] snapshot, error in
+        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -75,7 +74,7 @@ class ProfileViewController: UIViewController,
         }
     }
     
-    // MARK: - Layout
+    // MARK: - Layout / UI
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -115,6 +114,10 @@ class ProfileViewController: UIViewController,
         emailLabel.textColor = .secondaryLabel
         emailLabel.textAlignment = .center
         
+        logoutButton.setTitle("Log out", for: .normal)
+        logoutButton.layer.borderWidth = 1
+        logoutButton.layer.borderColor = UIColor.black.cgColor
+        logoutButton.layer.cornerRadius = 10
         logoutButton.clipsToBounds = true
     }
     
@@ -129,7 +132,7 @@ class ProfileViewController: UIViewController,
             return
         }
         
-        // Default from Auth
+        // Defaults from Auth
         nameLabel.text = user.displayName ?? "User"
         emailLabel.text = user.email
         
@@ -146,7 +149,7 @@ class ProfileViewController: UIViewController,
                 return
             }
             
-            // If Firestore has first/last, prefer that
+            // Prefer Firestore first/last if present
             if let firstName = data["firstName"] as? String {
                 var fullName = firstName
                 if let lastName = data["lastName"] as? String, !lastName.isEmpty {
@@ -157,7 +160,7 @@ class ProfileViewController: UIViewController,
                 }
             }
             
-            // Load profile image from Base64 if exists
+            // Load profile image if present
             if let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
                let profileImage = UIImage(data: imageData) {
@@ -244,7 +247,7 @@ class ProfileViewController: UIViewController,
 
         switch selected {
         case "Edit Profile":
-            // Do nothing here – the storyboard segue from the cell will fire
+            // Do nothing here – storyboard segue from the cell will fire
             break
         case "Password":
             presentTextInputAlert(title: "Change Password",
