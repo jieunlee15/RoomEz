@@ -17,7 +17,7 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loginButton.layer.cornerRadius = 10
+        loginButton.clipsToBounds = true
         errorMessage.text = ""
         errorMessage.textColor = .systemRed
         errorMessage.font = .systemFont(ofSize: 14, weight: .medium)

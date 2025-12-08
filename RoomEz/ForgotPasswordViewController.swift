@@ -40,12 +40,6 @@ class ForgotPasswordViewController: UIViewController {
             } else {
                 // Email sent successfully — show confirmation in green
                 self.showSuccess("If an account exists for this email, a reset link has been sent.")
-                
-                /*
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    self.navigationController?.popViewController(animated: true)
-                }
-                */
             }
         }
     }
