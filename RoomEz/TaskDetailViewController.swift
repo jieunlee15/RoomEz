@@ -34,23 +34,15 @@ class TaskDetailViewController: UIViewController {
         
         assigneeLabel.text = task.assignee ?? "Unassigned"
         
-        // Style button
-        markAsFinishedButton.layer.cornerRadius = 10
-        markAsFinishedButton.layer.borderWidth = 1
-        markAsFinishedButton.layer.borderColor = UIColor.black.cgColor
         
         // Button text and availability depend on task.status
         switch task.status {
         case .done:
             markAsFinishedButton.setTitle("Finished", for: .normal)
             markAsFinishedButton.isEnabled = false
-            markAsFinishedButton.backgroundColor = .systemGray5
-            markAsFinishedButton.setTitleColor(.black, for: .normal)
         case .inProgress, .todo:
             markAsFinishedButton.setTitle("Mark as Finished", for: .normal)
             markAsFinishedButton.isEnabled = true
-            markAsFinishedButton.backgroundColor = .white
-            markAsFinishedButton.setTitleColor(.black, for: .normal)
         }
     }
     

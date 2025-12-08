@@ -50,6 +50,9 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         super.viewDidLayoutSubviews()
         profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
         profileImageView.clipsToBounds = true
+        
+        profileImageView.layer.borderWidth = 1
+        profileImageView.layer.borderColor = UIColor(hex: "#4F9BDE").cgColor
     }
 
     deinit {
