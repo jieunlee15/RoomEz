@@ -30,6 +30,7 @@ class NewTaskViewController: UIViewController,
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         
         title = editingTask == nil ? "New Task" : "Edit Task"
         
