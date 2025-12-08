@@ -249,17 +249,27 @@ class TaskListViewController: UIViewController,
             
             var updatedTask = self.filteredTasks[idx.row]
             
+            let oldStatus = updatedTask.status
+            
             switch updatedTask.status {
             case .todo:       updatedTask.status = .inProgress
             case .inProgress: updatedTask.status = .done
             case .done:       updatedTask.status = .todo
             }
             
+            // 1) Save the updated status
             self.saveTask(updatedTask)
             self.filteredTasks[idx.row] = updatedTask
             tableView.reloadRows(at: [idx], with: .automatic)
             self.showBanner(message: "Status: \(updatedTask.status.rawValue)")
+            
+            // If we just moved into .done and task repeats, create the next one
+            if oldStatus != .done, updatedTask.status == .done,
+               let nextTask = self.nextOccurrence(for: updatedTask) {
+                self.saveTask(nextTask)
+            }
         }
+
         
         return cell
     }
@@ -301,6 +311,50 @@ class TaskListViewController: UIViewController,
         }
     }
     
+    private func nextOccurrence(for task: RoomTask) -> RoomTask? {
+        guard let due = task.dueDate else {
+            // no due date → nothing to repeat
+            return nil
+        }
+        
+        var component: Calendar.Component
+        var value: Int
+        
+        switch task.frequency {
+        case .none:
+            return nil
+        case .daily:
+            component = .day
+            value = 1
+        case .weekly:
+            component = .weekOfYear
+            value = 1
+        case .monthly:
+            component = .month
+            value = 1
+        }
+        
+        guard let newDue = calendar.date(byAdding: component, value: value, to: due) else {
+            return nil
+        }
+        
+        // brand-new task with new UUID
+        return RoomTask(
+            title: task.title,
+            details: task.details,
+            dueDate: newDue,
+            assignee: task.assignee,
+            status: .todo,
+            priority: task.priority,
+            createdAt: Date(),
+            updatedAt: nil,
+            completionPercent: 0.0,
+            reminderSet: task.reminderSet,
+            frequency: task.frequency
+        )
+    }
+
+    
     // MARK: - New Task
     @IBAction func addTaskTapped(_ sender: UIBarButtonItem) {
         presentEditor(task: nil)
@@ -317,6 +371,7 @@ class TaskListViewController: UIViewController,
             dest.editingTask = sender as? RoomTask
         }
     }
+    
     
     // MARK: - Banner
     func showBanner(message: String) {
