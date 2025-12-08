@@ -1,13 +1,19 @@
+//
 //  ProfileViewController.swift
 //  RoomEz
 //  Created by Shriya Venkataraman on 11/11/25.
+//
 
 import UIKit
 import FirebaseAuth
 import FirebaseStorage
 import FirebaseFirestore
 
-class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ProfileViewController: UIViewController,
+                             UITableViewDelegate,
+                             UITableViewDataSource,
+                             UIImagePickerControllerDelegate,
+                             UINavigationControllerDelegate {
     
     @IBOutlet weak var profileImageView: UIImageView!
     @IBOutlet weak var editPhotoButton: UIButton!
@@ -25,7 +31,9 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupUI()
+        
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = 44
@@ -40,6 +48,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         loadSettingsFromFirestore()
     }
     
+    // MARK: - Room Code
+    
     func loadRoomCode() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
@@ -53,7 +63,9 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             
             var roomText = "No room code"
-            if let data = snapshot?.data(), let roomCode = data["currentRoomCode"] as? String, !roomCode.isEmpty {
+            if let data = snapshot?.data(),
+               let roomCode = data["currentRoomCode"] as? String,
+               !roomCode.isEmpty {
                 roomText = "Room Code: \(roomCode)"
             }
             
@@ -63,6 +75,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    // MARK: - Layout
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -90,11 +103,9 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         editPhotoButton.layer.shadowOpacity = 0.2
         editPhotoButton.layer.shadowRadius = 4
         editPhotoButton.layer.shadowOffset = CGSize(width: 0, height: 2)
-        
     }
     
     private func setupUI() {
-        
         profileImageView.contentMode = .scaleAspectFill
         
         nameLabel.font = UIFont.boldSystemFont(ofSize: 24)
@@ -111,6 +122,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         logoutButton.clipsToBounds = true
     }
     
+    // MARK: - Load User Data
+    
     private func loadUserData() {
         guard let user = Auth.auth().currentUser else {
             nameLabel.text = "Guest"
@@ -120,6 +133,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             return
         }
         
+        // Default from Auth
         nameLabel.text = user.displayName ?? "User"
         emailLabel.text = user.email
         
@@ -127,15 +141,27 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         db.collection("users").document(uid).getDocument { snapshot, error in
             if let error = error {
-                print("❌ Error loading user document: \(error.localizedDescription)")
+                print("Error loading user document: \(error.localizedDescription)")
                 return
             }
             
             guard let data = snapshot?.data() else {
-                print("⚠️ No user data found in Firestore")
+                print("No user data found in Firestore")
                 return
             }
             
+            // If Firestore has first/last, prefer that
+            if let firstName = data["firstName"] as? String {
+                var fullName = firstName
+                if let lastName = data["lastName"] as? String, !lastName.isEmpty {
+                    fullName += " \(lastName)"
+                }
+                DispatchQueue.main.async {
+                    self.nameLabel.text = fullName
+                }
+            }
+            
+            // Load profile image from Base64 if exists
             if let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
                let profileImage = UIImage(data: imageData) {
@@ -164,11 +190,14 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    // MARK: - TableView Data Source
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         rows.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let rowTitle = rows[indexPath.row]
         let cellIdentifier: String
         
@@ -180,7 +209,8 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         default: cellIdentifier = "OptionCell"
         }
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier,
+                                                 for: indexPath)
         cell.textLabel?.text = rowTitle
         cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         
@@ -188,7 +218,9 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
             let toggleSwitch = UISwitch()
             toggleSwitch.isOn = (rowTitle == "Notification") ? notificationOn : anonymousOn
             toggleSwitch.tag = indexPath.row
-            toggleSwitch.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
+            toggleSwitch.addTarget(self,
+                                   action: #selector(switchChanged(_:)),
+                                   for: .valueChanged)
             toggleSwitch.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
             
             let container = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
@@ -208,22 +240,42 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         return cell
     }
     
+    // MARK: - TableView Delegate
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selected = rows[indexPath.row]
-        
+
         switch selected {
         case "Edit Profile":
-            presentTextInputAlert(title: "Edit Name", placeholder: "Enter new name") { newName in
-                self.nameLabel.text = newName
-                self.updateFirebaseDisplayName(newName)
-                self.saveProfileDataToFirestore(firstName: newName, displayName: newName)
-            }
+            // Do nothing here – the storyboard segue from the cell will fire
+            break
         case "Password":
-            presentTextInputAlert(title: "Change Password", placeholder: "Enter new password", isSecure: true) { newPassword in
+            presentTextInputAlert(title: "Change Password",
+                                  placeholder: "Enter new password",
+                                  isSecure: true) { newPassword in
                 self.updateFirebasePassword(newPassword)
             }
-        default: break
+        default:
+            break
+        }
+    }
+    
+    // MARK: - Pass data to EditProfileViewController
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "toEditProfile",
+           let dest = segue.destination as? EditProfileViewController {
+            
+            let fullName = nameLabel.text ?? ""
+            let parts = fullName.split(separator: " ")
+            
+            let first = parts.first.map(String.init) ?? ""
+            let last = parts.count > 1 ? parts.dropFirst().joined(separator: " ") : ""
+            
+            dest.currentFirstName = first
+            dest.currentLastName = last
+            dest.currentEmail = emailLabel.text
         }
     }
     
@@ -233,15 +285,24 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         if rowTitle == "Notification" {
             notificationOn = sender.isOn
-            db.collection("users").document(uid).setData(["notificationOn": notificationOn], merge: true)
+            db.collection("users").document(uid)
+                .setData(["notificationOn": notificationOn], merge: true)
         } else if rowTitle == "Anonymous" {
             anonymousOn = sender.isOn
-            db.collection("users").document(uid).setData(["anonymousOn": anonymousOn], merge: true)
+            db.collection("users").document(uid)
+                .setData(["anonymousOn": anonymousOn], merge: true)
         }
     }
     
-    func presentTextInputAlert(title: String, placeholder: String, isSecure: Bool = false, completion: @escaping (String) -> Void) {
-        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+    // MARK: - Alerts / Updates
+    
+    func presentTextInputAlert(title: String,
+                               placeholder: String,
+                               isSecure: Bool = false,
+                               completion: @escaping (String) -> Void) {
+        let alert = UIAlertController(title: title,
+                                      message: nil,
+                                      preferredStyle: .alert)
         alert.addTextField { tf in
             tf.placeholder = placeholder
             tf.isSecureTextEntry = isSecure
@@ -255,13 +316,6 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         present(alert, animated: true)
     }
     
-    func updateFirebaseDisplayName(_ newName: String) {
-        guard let user = Auth.auth().currentUser else { return }
-        let changeRequest = user.createProfileChangeRequest()
-        changeRequest.displayName = newName
-        changeRequest.commitChanges { _ in }
-    }
-    
     func updateFirebasePassword(_ newPassword: String) {
         Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
             if let error = error {
@@ -270,22 +324,16 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    func saveProfileDataToFirestore(firstName: String? = nil, displayName: String? = nil, photoURL: String? = nil) {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        var data: [String: Any] = [:]
-        if let firstName = firstName { data["firstName"] = firstName }
-        if let displayName = displayName { data["displayName"] = displayName }
-        if let photoURL = photoURL { data["photoURL"] = photoURL }
-        db.collection("users").document(uid).setData(data, merge: true)
-    }
-    
+    // MARK: - Photo Editing
     
     @IBAction func editPhotoButtonPressed(_ sender: UIButton) {
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.allowsEditing = true
         
-        let alert = UIAlertController(title: "Select Photo", message: nil, preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Select Photo",
+                                      message: nil,
+                                      preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Take Photo", style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 picker.sourceType = .camera
@@ -300,9 +348,11 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         present(alert, animated: true)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true)
-        guard let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage else { return }
+        guard let selectedImage = info[.editedImage] as? UIImage ??
+                info[.originalImage] as? UIImage else { return }
         self.profileImageView.image = selectedImage
         uploadProfilePhotoToFirebase(selectedImage)
     }
@@ -311,12 +361,10 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         picker.dismiss(animated: true)
     }
     
-    
     func uploadProfilePhotoToFirebase(_ image: UIImage) {
         guard let user = Auth.auth().currentUser else { return }
         let uid = user.uid
         
-        // Resize to 256x256
         let targetSize = CGSize(width: 256, height: 256)
         UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
         image.draw(in: CGRect(origin: .zero, size: targetSize))
@@ -325,21 +373,20 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         guard let finalImage = resizedImage,
               let imageData = finalImage.jpegData(compressionQuality: 0.7) else {
-            print("❌ Could not resize image")
+            print("Could not resize image")
             return
         }
         
         let base64String = imageData.base64EncodedString()
         
-        // Save Base64 string to Firestore
         db.collection("users").document(uid).setData([
             "profileImageBase64": base64String
         ], merge: true) { error in
             if let error = error {
-                print("❌ Firestore Save Failed: \(error.localizedDescription)")
+                print("Firestore Save Failed: \(error.localizedDescription)")
                 return
             }
-            print("🔥 Saved Base64 image to Firestore!")
+            print("Saved Base64 image to Firestore!")
             
             DispatchQueue.main.async {
                 self.profileImageView.image = finalImage
@@ -348,7 +395,7 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: - Log Out
-    // NOTE: This @IBAction must be present for the Storyboard connection to work.
+    
     @IBAction func logoutPressed(_ sender: UIButton) {
         do {
             try Auth.auth().signOut()
@@ -361,13 +408,12 @@ class ProfileViewController: UIViewController, UITableViewDelegate, UITableViewD
                     return
                 }
                 
-                // Wrap Login inside a Navigation Controller
                 let navController = UINavigationController(rootViewController: loginVC)
                 navController.modalPresentationStyle = .fullScreen
-                
                 window.rootViewController = navController
                 
-                UIView.transition(with: window, duration: 0.3,
+                UIView.transition(with: window,
+                                  duration: 0.3,
                                   options: .transitionFlipFromLeft,
                                   animations: nil,
                                   completion: nil)

@@ -1,29 +1,76 @@
-//
-//  EditProfileViewController.swift
-//  RoomEz
-//
-//  Created by Ananya Singh on 12/1/25.
-//
-
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
 class EditProfileViewController: UIViewController {
-
+    
+    @IBOutlet weak var firstNameTextField: UITextField!
+    @IBOutlet weak var lastNameTextField: UITextField!
+    @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var saveButton: UIButton!
+    
+    // values passed from ProfileViewController
+    var currentFirstName: String?
+    var currentLastName: String?
+    var currentEmail: String?
+    
+    let db = Firestore.firestore()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        
+        title = "Edit Profile"
+        
+        firstNameTextField.text = currentFirstName
+        lastNameTextField.text = currentLastName
+        emailTextField.text = currentEmail
+        emailTextField.isEnabled = false   // don’t edit email for now
+        
+        saveButton.layer.cornerRadius = 10
+        saveButton.clipsToBounds = true
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    @IBAction func saveButtonPressed(_ sender: UIButton) {
+        print("saveButtonPressed called")  // debug
+        
+        guard let newFirst = firstNameTextField.text, !newFirst.isEmpty,
+              let newLast = lastNameTextField.text, !newLast.isEmpty else {
+            print("First/last name cannot be empty")
+            return
+        }
+        
+        let fullDisplayName = "\(newFirst) \(newLast)"
+        
+        // Update Firebase Auth
+        if let user = Auth.auth().currentUser {
+            let changeRequest = user.createProfileChangeRequest()
+            changeRequest.displayName = fullDisplayName
+            changeRequest.commitChanges { error in
+                if let error = error {
+                    print("Error updating display name: \(error.localizedDescription)")
+                } else {
+                    print("Display name updated in Firebase Auth")
+                }
+            }
+        }
+        
+        // Update Firestore
+        if let uid = Auth.auth().currentUser?.uid {
+            db.collection("users").document(uid).setData([
+                "firstName": newFirst,
+                "lastName": newLast,
+                "displayName": fullDisplayName
+            ], merge: true) { error in
+                if let error = error {
+                    print("Error updating Firestore profile: \(error.localizedDescription)")
+                } else {
+                    print("Profile name updated in Firestore")
+                }
+            }
+        }
+        
+        // This sends you back to ProfileViewController
+        navigationController?.popViewController(animated: true)
     }
-    */
-
 }
+
