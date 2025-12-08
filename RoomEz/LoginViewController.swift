@@ -16,6 +16,7 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         
         loginButton.clipsToBounds = true
         errorMessage.text = ""
