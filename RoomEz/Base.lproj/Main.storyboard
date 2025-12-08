@@ -1617,11 +1617,11 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="120" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="elp-IJ-q2x">
-                                <rect key="frame" x="32.666666666666657" y="397" width="375" height="476"/>
+                                <rect key="frame" x="32.666666666666657" y="357" width="375" height="516"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="476" id="VtS-MZ-ksL"/>
                                     <constraint firstAttribute="width" constant="375" id="WFH-HK-iye"/>
+                                    <constraint firstAttribute="height" constant="516" id="hU9-zp-1Uo"/>
                                 </constraints>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="TaskCell" rowHeight="100" id="aX5-iL-RZU" customClass="TaskCell" customModule="RoomEz" customModuleProvider="target">
@@ -1744,7 +1744,7 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To Do Tasks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dH0-If-IRu">
-                                <rect key="frame" x="45" y="336" width="109" height="24"/>
+                                <rect key="frame" x="22" y="318" width="109" height="24"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="24" id="43d-Ak-j6T"/>
                                     <constraint firstAttribute="width" constant="109" id="Hhl-2F-IjL"/>
@@ -1764,20 +1764,21 @@
                         <viewLayoutGuide key="safeArea" id="hdi-0d-TRT"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="dH0-If-IRu" firstAttribute="top" secondItem="T7z-pW-k2V" secondAttribute="bottom" constant="68" id="7MQ-NC-lr0"/>
+                            <constraint firstItem="dH0-If-IRu" firstAttribute="top" secondItem="T7z-pW-k2V" secondAttribute="bottom" constant="50" id="7MQ-NC-lr0"/>
                             <constraint firstItem="hdi-0d-TRT" firstAttribute="trailing" secondItem="fke-D5-5Qj" secondAttribute="trailing" constant="51.666666666666686" id="8yR-xk-Jjc"/>
                             <constraint firstItem="sIN-3N-rEc" firstAttribute="leading" secondItem="siZ-m0-zPt" secondAttribute="trailing" constant="13" id="FMh-bM-Y5J"/>
                             <constraint firstItem="fke-D5-5Qj" firstAttribute="top" secondItem="sIN-3N-rEc" secondAttribute="bottom" constant="32" id="PjW-31-Qlz"/>
                             <constraint firstItem="T7z-pW-k2V" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="45" id="Scr-Sk-1tL"/>
                             <constraint firstItem="sIN-3N-rEc" firstAttribute="top" secondItem="hdi-0d-TRT" secondAttribute="top" id="Wdi-1T-qqV"/>
-                            <constraint firstItem="elp-IJ-q2x" firstAttribute="top" secondItem="dH0-If-IRu" secondAttribute="bottom" constant="37" id="Y1x-br-Tdi"/>
+                            <constraint firstItem="elp-IJ-q2x" firstAttribute="top" secondItem="dH0-If-IRu" secondAttribute="bottom" constant="15" id="Y1x-br-Tdi"/>
+                            <constraint firstItem="hdi-0d-TRT" firstAttribute="bottom" secondItem="elp-IJ-q2x" secondAttribute="bottom" id="ZMi-eX-lJf"/>
                             <constraint firstItem="vGv-bF-JWb" firstAttribute="top" secondItem="sIN-3N-rEc" secondAttribute="bottom" constant="15" id="em3-SC-qY8"/>
                             <constraint firstItem="vGv-bF-JWb" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="45" id="fhe-jV-saJ"/>
                             <constraint firstItem="T7z-pW-k2V" firstAttribute="top" secondItem="vGv-bF-JWb" secondAttribute="bottom" constant="21" id="jSp-ye-AqN"/>
                             <constraint firstItem="siZ-m0-zPt" firstAttribute="top" secondItem="hdi-0d-TRT" secondAttribute="top" id="lil-cT-OKL"/>
                             <constraint firstItem="siZ-m0-zPt" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="22" id="p3G-0i-Gbg"/>
                             <constraint firstItem="elp-IJ-q2x" firstAttribute="centerX" secondItem="EdN-aZ-nk2" secondAttribute="centerX" id="vXX-Ua-m83"/>
-                            <constraint firstItem="dH0-If-IRu" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="45" id="wBC-Ts-9Kc"/>
+                            <constraint firstItem="dH0-If-IRu" firstAttribute="leading" secondItem="hdi-0d-TRT" secondAttribute="leading" constant="22" id="wBC-Ts-9Kc"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="JGH-tT-0Pe"/>
@@ -2262,7 +2263,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="t77-uT-Apv"/>
         <segue reference="MJP-CM-tfj"/>
         <segue reference="Laa-Wu-5vK"/>
     </inferredMetricsTieBreakers>
