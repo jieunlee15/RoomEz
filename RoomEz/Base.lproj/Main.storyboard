@@ -370,7 +370,7 @@
                                 </constraints>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="soD-p7-RNq">
-                                <rect key="frame" x="210" y="233" width="42" height="42"/>
+                                <rect key="frame" x="215" y="233" width="42" height="42"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="42" id="dhg-PZ-s2M"/>
                                     <constraint firstAttribute="width" constant="42" id="maJ-R8-Ucm"/>
@@ -519,7 +519,7 @@
                             <constraint firstItem="jVt-6z-qBj" firstAttribute="top" secondItem="sLc-Ej-oPa" secondAttribute="bottom" constant="20" id="2NT-In-L7N"/>
                             <constraint firstItem="ruq-WD-TN5" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="5IM-50-gYR"/>
                             <constraint firstItem="Oh6-jN-eQ2" firstAttribute="centerX" secondItem="q62-uS-g3M" secondAttribute="centerX" id="5eV-x7-eOw"/>
-                            <constraint firstItem="soD-p7-RNq" firstAttribute="leading" secondItem="Mod-wr-gCb" secondAttribute="leading" constant="210" id="HfC-eG-qj8"/>
+                            <constraint firstItem="soD-p7-RNq" firstAttribute="leading" secondItem="Mod-wr-gCb" secondAttribute="leading" constant="215" id="HfC-eG-qj8"/>
                             <constraint firstItem="jVt-6z-qBj" firstAttribute="top" secondItem="Mod-wr-gCb" secondAttribute="top" constant="616" id="Old-mY-GLA"/>
                             <constraint firstItem="Oh6-jN-eQ2" firstAttribute="top" secondItem="Mod-wr-gCb" secondAttribute="top" constant="111" id="PR5-Yh-gNF"/>
                             <constraint firstItem="soD-p7-RNq" firstAttribute="top" secondItem="Oh6-jN-eQ2" secondAttribute="bottom" constant="-32" id="VPc-F1-sk3"/>
@@ -1457,11 +1457,11 @@
             </objects>
             <point key="canvasLocation" x="258" y="884"/>
         </scene>
-        <!--Message-->
+        <!--Announcements-->
         <scene sceneID="0bT-Dc-Mrz">
             <objects>
                 <navigationController storyboardIdentifier="MessagesNavController" automaticallyAdjustsScrollViewInsets="NO" id="7xI-c7-VXx" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Message" image="message.fill" catalog="system" id="x0h-gl-iuu"/>
+                    <tabBarItem key="tabBarItem" title="Announcements" image="message.fill" catalog="system" id="x0h-gl-iuu"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="IE9-zG-y8h">
                         <rect key="frame" x="0.0" y="62" width="440" height="44"/>

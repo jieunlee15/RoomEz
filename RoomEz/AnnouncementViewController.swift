@@ -36,6 +36,7 @@ class AnnouncementViewController: UIViewController,  UITableViewDataSource, UITa
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "Announcements"
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
