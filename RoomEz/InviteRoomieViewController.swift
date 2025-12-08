@@ -13,6 +13,7 @@ class InviteRoomieViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         let newCode = generateRandomCode()
         generatedCodeLabel.text = newCode
         generatedCode = newCode

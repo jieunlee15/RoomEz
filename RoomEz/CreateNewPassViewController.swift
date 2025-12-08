@@ -20,6 +20,7 @@ class CreateNewPassViewController: UIViewController {
         super.viewDidLoad()
         //errorLabel.text = ""
         //errorLabel.textColor = .systemRed
+        enableKeyboardDismissOnTap()
     }
 
     @IBAction func resetPassPressed(_ sender: Any) {
