@@ -8,6 +8,7 @@ class PasswordChangedViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
 
         // Do any additional setup after loading the view.
     }

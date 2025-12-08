@@ -15,6 +15,7 @@ class EnterCodeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         errorLabel.text = ""
     }
 

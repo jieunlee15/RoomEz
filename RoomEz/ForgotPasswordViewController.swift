@@ -14,6 +14,7 @@ class ForgotPasswordViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnTap()
         
         // Clear any previous error/success messages when the view loads
         errorLabel.text = "Please enter the email address associated with your account"
