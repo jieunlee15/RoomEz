@@ -114,10 +114,6 @@ class ProfileViewController: UIViewController,
         emailLabel.textColor = .secondaryLabel
         emailLabel.textAlignment = .center
         
-        logoutButton.setTitle("Log out", for: .normal)
-        logoutButton.layer.borderWidth = 1
-        logoutButton.layer.borderColor = UIColor.black.cgColor
-        logoutButton.layer.cornerRadius = 10
         logoutButton.clipsToBounds = true
     }
     
