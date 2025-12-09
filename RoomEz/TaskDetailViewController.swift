@@ -120,7 +120,7 @@ class TaskDetailViewController: UIViewController {
         
         // Priority pill + frequency on same row
         priorityPill.sizeToFit()
-        let pillHeight: CGFloat = 28
+        let pillHeight: CGFloat = 32
         let pillWidth = min(priorityPill.bounds.width + 16, contentWidth * 0.4)
         
         priorityPill.frame = CGRect(x: contentX,
@@ -173,6 +173,9 @@ class TaskDetailViewController: UIViewController {
             pill.clipsToBounds = true
             pill.contentEdgeInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
             pill.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+            pill.titleLabel?.numberOfLines = 1
+                pill.titleLabel?.adjustsFontSizeToFitWidth = true
+                pill.titleLabel?.minimumScaleFactor = 0.7
             pill.isUserInteractionEnabled = false
         }
         
