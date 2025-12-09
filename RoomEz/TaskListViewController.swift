@@ -347,17 +347,17 @@ class TaskListViewController: UIViewController,
             
             dest.delegate = self
             dest.editingTask = sender as? RoomTask
-        
+
         } else if segue.identifier == "showTaskDetail",
                   let dest = segue.destination as? TaskDetailViewController,
                   let task = sender as? RoomTask {
-            
-            // Adjust property name to whatever you have on TaskDetailViewController
+
             dest.task = task
-            // if you need roomCode or anything else:
-            // dest.roomCode = self.roomCode
+            dest.roomCode = self.roomCode   // ← UNCOMMENT / ADD THIS
+        
         }
     }
+
 
 
     // MARK: - Banner
@@ -421,8 +421,12 @@ class TaskListViewController: UIViewController,
     }
     func tableView(_ tableView: UITableView,
                    didSelectRowAt indexPath: IndexPath) {
+
         tableView.deselectRow(at: indexPath, animated: true)
-        
+
+        // Safety: make sure the row still exists in filteredTasks
+        guard indexPath.row < filteredTasks.count else { return }
+
         let task = filteredTasks[indexPath.row]
         performSegue(withIdentifier: "showTaskDetail", sender: task)
     }

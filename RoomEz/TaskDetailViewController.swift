@@ -264,25 +264,27 @@ class TaskDetailViewController: UIViewController {
     // MARK: - Actions
     @IBAction func markDoneTapped(_ sender: UIButton) {
         guard var t = task else { return }
-        
-        switch t.status {
-        case .todo:
-            t.status = .inProgress
-        case .inProgress:
+
+        // Simple toggle: not-done → done, done → todo (or you can just always set .done)
+        if t.status == .done {
+            t.status = .todo        // or .inProgress if you prefer
+        } else {
             t.status = .done
-        case .done:
-            t.status = .todo
         }
-        
-        task = t
-        configure(with: t)
-        
-        // Optional: update Firestore
+
+        t.updatedAt = Date()
+        self.task = t
+        configure(with: t)          // refresh the UI (priority/overdue pill etc.)
+
+        // Persist to Firestore
         guard let code = roomCode else { return }
+
         db.collection("rooms")
             .document(code)
             .collection("tasks")
             .document(t.id.uuidString)
             .setData(t.toDictionary(), merge: true)
     }
+
+
 }

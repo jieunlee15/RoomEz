@@ -1878,7 +1878,7 @@
             <objects>
                 <viewController storyboardIdentifier="TaskDetailViewController" id="t7T-4F-1EB" customClass="TaskDetailViewController" customModule="RoomEz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ZUI-Gs-lsX">
-                        <rect key="frame" x="0.0" y="0.0" width="440" height="884"/>
+                        <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MOa-UV-hZc">
@@ -1893,7 +1893,6 @@
                                     <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="18"/>
                                 </buttonConfiguration>
                                 <connections>
-                                    <action selector="markAsFinishedTapped:" destination="t7T-4F-1EB" eventType="touchUpInside" id="lyl-5i-Bss"/>
                                     <action selector="markDoneTapped:" destination="t7T-4F-1EB" eventType="touchUpInside" id="lUS-Hb-7xz"/>
                                 </connections>
                             </button>
