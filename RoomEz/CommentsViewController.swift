@@ -4,10 +4,7 @@ import UIKit
 import FirebaseFirestore
 import FirebaseAuth
 
-// If you already have a Comment type in your project, remove this small struct.
-// Otherwise this local struct will be used.
-
-/// Comment cell: chat-bubble style
+// Comment cell: chat-bubble style
 final class BubbleCommentCell: UITableViewCell {
     static let reuseID = "BubbleCommentCell"
 
