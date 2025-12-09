@@ -1,7 +1,3 @@
-//  NewAnnouncementViewController.swift
-//  RoomEz
-//  Created by Jieun Lee on 10/20/25.
-
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore

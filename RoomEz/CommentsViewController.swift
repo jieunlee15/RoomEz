@@ -1,5 +1,3 @@
-// CommentsViewController.swift
-
 import UIKit
 import FirebaseFirestore
 import FirebaseAuth

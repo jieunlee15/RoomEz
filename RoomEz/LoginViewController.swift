@@ -1,8 +1,3 @@
-//
-//  LoginViewController.swift
-//  RoomEz
-//
-
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore

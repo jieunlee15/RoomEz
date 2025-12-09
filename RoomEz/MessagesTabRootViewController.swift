@@ -1,7 +1,3 @@
-//  MessagesTabRootViewController.swift
-//  RoomEz
-//  Created by Jieun Lee on 11/28/25.
-
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore

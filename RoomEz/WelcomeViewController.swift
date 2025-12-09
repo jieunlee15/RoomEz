@@ -1,7 +1,3 @@
-//  WelcomeViewController.swift
-//  RoomEz
-//  Created by Ananya Singh on 10/20/25.
-
 import UIKit
 
 class WelcomeViewController: UIViewController {

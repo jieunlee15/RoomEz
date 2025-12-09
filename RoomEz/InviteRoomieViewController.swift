@@ -1,7 +1,3 @@
-//  InviteRoomieViewController.swift
-//  RoomEz
-//  Created by Venkataraman, Shriya on 10/20/25.
-
 import UIKit
 import FirebaseFirestore
 import FirebaseAuth

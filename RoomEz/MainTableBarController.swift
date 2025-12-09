@@ -1,10 +1,3 @@
-//
-//  MainTabBarController.swift
-//  RoomEz
-//
-//  Created by Ananya Singh on 12/4/25.
-//
-
 import UIKit
 import FirebaseAuth
 import FirebaseFirestore
