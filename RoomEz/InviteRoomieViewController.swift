@@ -35,14 +35,13 @@ class InviteRoomieViewController: UIViewController {
         let roomRef = db.collection("roommateGroups").document(code)
         roomRef.setData([
             "code": code,
-            "members": [], // optional: leave empty if you don't want creator automatically a member
+            "members": [],
             "createdAt": Timestamp()
         ]) { error in
             if let error = error {
                 print("Error creating room: \(error.localizedDescription)")
             } else {
                 print("Room created: \(code)")
-                // DO NOT write currentRoomCode here!
             }
         }
     }

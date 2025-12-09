@@ -23,12 +23,12 @@ class EditProfileViewController: UIViewController {
         firstNameTextField.text = currentFirstName
         lastNameTextField.text = currentLastName
         emailTextField.text = currentEmail
-        emailTextField.isEnabled = false   // email read-only for now
+        emailTextField.isEnabled = false   // email read-only
         
         firstNameTextField.text = currentFirstName
         lastNameTextField.text = currentLastName
         emailTextField.text = currentEmail
-        emailTextField.isEnabled = false   // email read-only for now
+        emailTextField.isEnabled = false   // email read-only
         
         // Make text black
         firstNameTextField.textColor = .black
@@ -54,7 +54,7 @@ class EditProfileViewController: UIViewController {
             return
         }
         
-        // 1) Update Firebase Auth displayName
+        // Update Firebase Auth displayName
         let changeRequest = user.createProfileChangeRequest()
         changeRequest.displayName = fullDisplayName
         
@@ -66,7 +66,7 @@ class EditProfileViewController: UIViewController {
             }
         }
         
-        // 2) Update Firestore user document, then pop back
+        // Update Firestore user document, then pop back
         db.collection("users").document(uid).setData([
             "firstName": newFirst,
             "lastName": newLast,

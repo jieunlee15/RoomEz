@@ -7,10 +7,8 @@ class WelcomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Style the login button
         loginButton.clipsToBounds = true
         
-        // Style the register button
         registerButton.clipsToBounds = true
     }
 }

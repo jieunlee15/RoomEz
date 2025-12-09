@@ -20,7 +20,7 @@ class TaskDetailViewController: UIViewController {
     
     // MARK: - Data
     var task: RoomTask?
-    var roomCode: String?    // only needed if you want to write back to Firestore
+    var roomCode: String?
     
     private let db = Firestore.firestore()
     
@@ -29,8 +29,6 @@ class TaskDetailViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.title = "Task Details"
-        
-        // Turn off Auto Layout for these (manual frames)
         [
             titleLabel,
             descriptionLabel,
@@ -55,8 +53,7 @@ class TaskDetailViewController: UIViewController {
     // MARK: - Manual layout (NO constraints)
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
-        // If any of the core views are missing, just skip layout to avoid crash
+    
         guard let titleLabel = titleLabel,
               let descriptionLabel = descriptionLabel,
               let dueTitleLabel = dueTitleLabel,
@@ -149,11 +146,9 @@ class TaskDetailViewController: UIViewController {
     private func styleUI() {
         view.backgroundColor = .systemBackground
         
-        // Title – a bit bigger but not huge
         titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
         titleLabel?.numberOfLines = 2
         
-        // Description – slightly smaller, body text
         descriptionLabel?.font = .systemFont(ofSize: 14, weight: .regular)
         descriptionLabel?.textColor = .secondaryLabel
         descriptionLabel?.numberOfLines = 0

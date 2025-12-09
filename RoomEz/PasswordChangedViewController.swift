@@ -6,7 +6,6 @@ class PasswordChangedViewController: UIViewController {
         super.viewDidLoad()
         enableKeyboardDismissOnTap()
 
-        // Do any additional setup after loading the view.
     }
     
     @IBAction func backToLoginPressed(_ sender: Any) {

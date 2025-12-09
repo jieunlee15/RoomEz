@@ -38,7 +38,7 @@ class CreateNewPassViewController: UIViewController {
             return
         }
 
-        // Only continue if user is signed in — no segue unless true success
+        // Only continue if user is signed in 
         if let user = Auth.auth().currentUser {
             user.updatePassword(to: newPass) { error in
                 if let error = error {

@@ -7,13 +7,11 @@ class TaskCell: UITableViewCell {
     @IBOutlet weak var statusButton: UIButton?
     @IBOutlet weak var priorityLabel: UIButton?   // pill-style button
     
-    // VC will set this; we call it when the button is tapped
     var onStatusTapped: (() -> Void)?
     
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        // Make sure Auto Layout isn't trying to control these
         [titleLabel, assigneeLabel, dueDateLabel, statusButton, priorityLabel].forEach {
             $0?.translatesAutoresizingMaskIntoConstraints = true
         }
@@ -47,8 +45,7 @@ class TaskCell: UITableViewCell {
         dueDateLabel?.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         dueDateLabel?.textColor = .secondaryLabel
     }
-    
-    // Manual layout – NO CONSTRAINTS
+
     override func layoutSubviews() {
         super.layoutSubviews()
         
@@ -57,7 +54,6 @@ class TaskCell: UITableViewCell {
               let dueDateLabel = dueDateLabel,
               let statusButton = statusButton,
               let priorityLabel = priorityLabel else {
-            // If any outlet isn’t wired, just skip layout to avoid crash
             return
         }
         

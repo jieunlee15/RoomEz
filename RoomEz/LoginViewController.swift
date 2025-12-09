@@ -62,7 +62,6 @@ class LoginViewController: UIViewController {
         tabBar.setUserHasRoom(userHasRoom)
         tabBar.selectedIndex = 2
         
-        // FIX: Present modally exactly like your OG login flow did
         tabBar.modalPresentationStyle = .fullScreen
         self.present(tabBar, animated: true, completion: nil)
     }

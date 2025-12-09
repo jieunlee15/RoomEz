@@ -1894,6 +1894,7 @@
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="markAsFinishedTapped:" destination="t7T-4F-1EB" eventType="touchUpInside" id="lyl-5i-Bss"/>
+                                    <action selector="markDoneTapped:" destination="t7T-4F-1EB" eventType="touchUpInside" id="lUS-Hb-7xz"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CzO-sp-Tfk">
@@ -1945,6 +1946,7 @@
                     <connections>
                         <outlet property="assigneeTitleLabel" destination="lyd-NA-W4T" id="nRe-K2-u8N"/>
                         <outlet property="assigneeValueLabel" destination="lYI-F9-wRH" id="J2x-hU-krm"/>
+                        <outlet property="descriptionLabel" destination="izB-az-QPD" id="ByC-Xc-Wxf"/>
                         <outlet property="dueTitleLabel" destination="CzO-sp-Tfk" id="dSY-j5-bWn"/>
                         <outlet property="dueValueLabel" destination="izB-az-QPD" id="sRt-2g-r0n"/>
                         <outlet property="frequencyLabel" destination="x1c-rv-HCB" id="bYf-Pf-dWI"/>

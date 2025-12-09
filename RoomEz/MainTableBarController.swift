@@ -107,7 +107,7 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
         return true
     }
     
-    // Optional manual override if you ever need it
+    // Optional manual override
     func setUserHasRoom(_ hasRoom: Bool) {
         userHasRoom = hasRoom
     }

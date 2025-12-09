@@ -60,7 +60,7 @@ class NewAnnouncementViewController: UIViewController {
     }
     
     @IBAction func submitTapped(_ sender: UIButton) {
-        // 1. Validate text
+        // Validate text
         guard
             let rawTitle = titleField.text,
             let rawContent = contentField.text
@@ -75,21 +75,21 @@ class NewAnnouncementViewController: UIViewController {
             return
         }
         
-        // 2. Need a room code (set in JoinCodeViewController)
+        // Need a room code (set in JoinCodeViewController)
         guard let roomCode = roomCode else {
             showAlert(title: "No Room",
                       message: "Cannot post without a room. Please join a room first.")
             return
         }
         
-        // 3. Need a logged-in user
+        // Need a logged-in user
         guard let user = Auth.auth().currentUser else {
             showAlert(title: "Not Logged In",
                       message: "You must be logged in to post an announcement.")
             return
         }
         
-        // 4. Author name based on anonymous toggle
+        // Author name based on anonymous toggle
         let isAnonymous = anonymousSwitch.isOn
         let authorName: String = {
             if isAnonymous { return "Anonymous" }
@@ -120,7 +120,7 @@ class NewAnnouncementViewController: UIViewController {
             .document(roomCode)
             .collection("announcements")
         
-        // 6. Save to Firestore
+        // Save to Firestore
         var ref: DocumentReference? = nil
         ref = collection.addDocument(data: data) { [weak self] error in
             guard let self = self else { return }

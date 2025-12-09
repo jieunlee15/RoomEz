@@ -106,12 +106,12 @@ final class BubbleCommentCell: UITableViewCell {
             messageLabel.textColor = .label
         }
 
-        // Hide "Reply" on replies (optional)
+        // Hide "Reply" on replies
         replyButton.isHidden = isReply
     }
 }
 
-/// Top-level input bar (sticky)
+// Top-level input bar
 final class CommentInputBar: UIView {
     let textView = UITextView()
     let sendButton = UIButton(type: .system)
@@ -230,10 +230,9 @@ final class CommentInputBar: UIView {
 }
 
 
-/// The main view controller
+// Main view controller
 class CommentsViewController: UIViewController {
 
-    // If you have an IBOutlet for a tableView in storyboard, hook it up. Otherwise create programmatically.
     @IBOutlet weak var tableView: UITableView!
 
     var announcement: Announcement?

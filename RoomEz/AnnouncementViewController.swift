@@ -116,7 +116,7 @@ class AnnouncementViewController: UIViewController,
            let announcement = sender as? Announcement {
 
             guard let roomCode = self.roomCode else {
-                print("❌ ERROR: roomCode is nil in AnnouncementViewController")
+                print("ERROR: roomCode is nil in AnnouncementViewController")
                 return
             }
 
@@ -161,21 +161,20 @@ class AnnouncementViewController: UIViewController,
     func didTapComments(for announcementID: String) {
         guard let announcement = announcements.first(where: { $0.id == announcementID }) else { return }
         
-        // 1. Get a reference to your Storyboard
+        // Get a reference to your Storyboard
         let storyboard = UIStoryboard(name: "Main", bundle: nil) // Change "Main" if your storyboard has a different name
         
-        // 2. Instantiate the View Controller using the Storyboard ID
+        // Instantiate the View Controller using the Storyboard ID
         guard let commentsVC = storyboard.instantiateViewController(withIdentifier: "CommentsViewControllerID") as? CommentsViewController else {
             fatalError("Failed to instantiate CommentsViewController from Storyboard.")
         }
         
-        // 3. Pass the required data to the instance
+        // Pass the required data to the instance
         commentsVC.announcement = announcement
         commentsVC.announcementID = announcement.id
-        // Assuming 'roomCode' is a property on your current view controller
         commentsVC.roomCode = self.roomCode
         
-        // 4. Push the instantiated object
+        // Push the instantiated object
         navigationController?.pushViewController(commentsVC, animated: true)
     }
     // MARK: - Swipe to Delete
