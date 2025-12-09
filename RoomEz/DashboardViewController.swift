@@ -58,8 +58,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
             dest.roomCode = self.roomCode   // <— THIS is the important part
         }
     }
-
-
     
     deinit {
         tasksListener?.remove()
@@ -225,8 +223,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         tabBarController?.selectedIndex = 1
     }
     
-    
-    
     // MARK: - Table view
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -256,7 +252,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         return cell
     }
     
-    
     func tableView(_ tableView: UITableView,
                    didSelectRowAt indexPath: IndexPath) {
 
@@ -267,7 +262,6 @@ class DashboardViewController: UIViewController, UITableViewDataSource, UITableV
         let task = filteredTasks[indexPath.row]
         performSegue(withIdentifier: "showTaskDetailFromDashboard", sender: task)
     }
-
 
     private func toggleTaskStatus(_ task: RoomTask) {
         guard let code = roomCode else { return }

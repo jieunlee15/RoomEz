@@ -8,7 +8,6 @@ struct Announcement {
     let date: Date
 }
 
-
 protocol AnnouncementCellDelegate: AnyObject {
     func didTapComments(for announcementID: String)
 }

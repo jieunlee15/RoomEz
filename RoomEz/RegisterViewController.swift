@@ -13,7 +13,6 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var confirmPasswordText: UITextField!
     @IBOutlet weak var registerButton: UIButton!
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         enableKeyboardDismissOnTap()
@@ -65,7 +64,6 @@ class RegisterViewController: UIViewController {
         textField.text = currentText
     }
     
-    
     // MARK: - Navigate to Main Tab Bar
     func goToMainTabs(userHasRoom: Bool) {
         guard let tabBar = storyboard?.instantiateViewController(withIdentifier: "MainTabBar") as? MainTabBarController else { return }
@@ -75,7 +73,6 @@ class RegisterViewController: UIViewController {
         tabBar.modalPresentationStyle = .fullScreen
         self.present(tabBar, animated: true, completion: nil)
     }
-    
     
     // MARK: - Register User
     @IBAction func registerButtonPressed(_ sender: Any) {

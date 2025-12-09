@@ -205,7 +205,6 @@ class AnnouncementViewController: UIViewController,
     }
     
     // MARK: - Banner
-    
     func showNewAnnouncementBanner() {
         guard notificationsEnabled else { return }
         

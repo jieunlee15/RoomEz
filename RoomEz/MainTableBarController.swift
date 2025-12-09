@@ -17,7 +17,6 @@ class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
             }
         }
     }
-
     
     private let db = Firestore.firestore()
     private var roomListener: ListenerRegistration?
